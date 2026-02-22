@@ -26,7 +26,7 @@ const Header = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
       setSearchQuery("");
     }
@@ -36,7 +36,7 @@ const Header = () => {
     <>
       {/* Announcement Bar */}
       <div className="bg-announcement text-announcement-foreground text-center py-2.5 text-xs font-medium tracking-widest uppercase">
-        Free Delivery on Orders Over €50 · New Arrivals Every Week
+        Free Delivery on Orders Over $50 · New Arrivals Every Week
       </div>
 
       {/* Main Nav */}
@@ -67,27 +67,27 @@ const Header = () => {
                 Categories
                 <ChevronDown className="w-4 h-4" />
               </button>
-              <div className="absolute top-full left-0 w-screen max-w-[1200px] mt-2 mx-auto bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
-                <div className="grid grid-cols-4 gap-4 p-6">
+              <div className="absolute top-full right-0 w-72 mt-2 bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden">
+                <div className="grid grid-cols-2 gap-3 p-4">
                   {categories.map((category) => {
-                    const categoryProducts = products.filter(p => p.category === category.name).slice(0, 3);
+                    const categoryProducts = products.filter(p => p.category === category.name).slice(0, 2);
 
                     return (
-                      <div key={category.id} className="col-span-1">
+                      <div key={category.id}>
                         <Link
                           href={`/categories/${category.slug}`}
-                          className="block py-2 text-sm font-semibold text-primary hover:underline"
+                          className="block py-1 text-sm font-semibold text-primary hover:underline"
                         >
                           {category.name}
                         </Link>
-                        <p className="text-xs text-muted-foreground mt-1">{category.productCount} products</p>
+                        <p className="text-xs text-muted-foreground">{category.productCount} products</p>
 
-                        <div className="mt-3 space-y-2">
+                        <div className="mt-2 space-y-1">
                           {categoryProducts.map((product) => (
                             <Link
                               key={product.id}
                               href={`/product/${product.id}`}
-                              className="block text-xs text-foreground hover:text-primary"
+                              className="block text-xs text-foreground hover:text-primary truncate"
                             >
                               {product.name}
                             </Link>

@@ -56,7 +56,7 @@ const CartItemRow = ({ item, onUpdateQuantity, onRemove }: CartItemRowProps) => 
             </button>
           </div>
           <span className="text-sm font-bold text-foreground">
-            €{(product.price * quantity).toFixed(2)}
+            ${(product.price * quantity).toFixed(2)}
           </span>
         </div>
       </div>

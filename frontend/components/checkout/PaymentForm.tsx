@@ -107,15 +107,15 @@ const PaymentForm = ({ subtotal, onPay, onBack, isLoading }: PaymentFormProps) =
         <div className="bg-card border border-border rounded-xl p-4 space-y-2 text-sm mt-2">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-medium">€{subtotal.toFixed(2)}</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Shipping</span>
-            <span className="font-medium">{shipping === 0 ? 'Free' : `€${shipping.toFixed(2)}`}</span>
+            <span className="font-medium">{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
           </div>
           <div className="flex justify-between border-t border-border pt-2">
             <span className="font-bold text-foreground">Total</span>
-            <span className="font-bold text-primary text-base">€{total.toFixed(2)}</span>
+            <span className="font-bold text-primary text-base">${total.toFixed(2)}</span>
           </div>
         </div>
 
@@ -134,7 +134,7 @@ const PaymentForm = ({ subtotal, onPay, onBack, isLoading }: PaymentFormProps) =
             className="flex-1 py-3.5 rounded-full font-semibold text-sm"
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : `Pay €${total.toFixed(2)}`}
+            {isLoading ? 'Processing...' : `Pay $${total.toFixed(2)}`}
           </LightSheenButton>
         </div>
       </form>

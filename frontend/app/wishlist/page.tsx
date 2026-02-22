@@ -109,10 +109,10 @@ export default function WishlistPage() {
                   </Link>
                   <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm font-bold text-foreground">€{product.price.toFixed(2)}</span>
+                    <span className="text-sm font-bold text-foreground">${product.price.toFixed(2)}</span>
                     {product.originalPrice && (
                       <span className="text-xs text-muted-foreground line-through">
-                        €{product.originalPrice.toFixed(2)}
+                        ${product.originalPrice.toFixed(2)}
                       </span>
                     )}
                   </div>

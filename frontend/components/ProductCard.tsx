@@ -85,12 +85,12 @@ const ProductCard = ({ product }: { product: Product }) => {
         {!isOutOfStock ? (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-4 right-4 bg-primary text-primary-foreground px-4 py-2 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-xl z-10 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-5 py-2 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] z-10 overflow-hidden whitespace-nowrap before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
           >
             Add to cart
           </button>
         ) : (
-          <div className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm text-muted-foreground text-[10px] font-semibold uppercase px-3 py-1.5 rounded-full z-10">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card/90 backdrop-blur-sm text-muted-foreground text-[10px] font-semibold uppercase px-3 py-1.5 rounded-full z-10 whitespace-nowrap">
             Unavailable
           </div>
         )}
@@ -99,9 +99,9 @@ const ProductCard = ({ product }: { product: Product }) => {
       <div className="p-3">
         <h3 className="font-body text-sm font-semibold text-foreground leading-tight">{product.name}</h3>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-sm font-bold text-foreground">€{product.price.toFixed(2)}</span>
+          <span className="text-sm font-bold text-foreground">${product.price.toFixed(2)}</span>
           {product.originalPrice && (
-            <span className="text-xs text-muted-foreground line-through">€{product.originalPrice.toFixed(2)}</span>
+            <span className="text-xs text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</span>
           )}
         </div>
         <div className="flex items-center gap-1 mt-1.5">

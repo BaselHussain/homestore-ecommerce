@@ -1,0 +1,77 @@
+'use client';
+
+import { useParams } from 'next/navigation';
+import { useMemo } from 'react';
+import Link from 'next/link';
+import { ChevronRight, Package } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import ProductCard from '@/components/ProductCard';
+import { products, categories } from '@/lib/products-mock';
+
+const CategoryPage = () => {
+  const { slug } = useParams<{ slug: string }>();
+
+  const category = useMemo(
+    () => categories.find((c) => c.slug === slug),
+    [slug]
+  );
+
+  const categoryProducts = useMemo(
+    () => products.filter((p) => p.category.toLowerCase().replace(/\s+/g, '-') === slug),
+    [slug]
+  );
+
+  const displayName = category?.name ?? slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <main className="container mx-auto px-4 lg:px-8 py-12">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-8">
+          <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <span className="text-foreground font-medium">{displayName}</span>
+        </nav>
+
+        <div className="mb-8">
+          <span className="text-xs font-semibold tracking-widest uppercase text-primary">Category</span>
+          <h1 className="font-display text-4xl font-bold text-foreground mt-1">{displayName}</h1>
+          {categoryProducts.length > 0 && (
+            <p className="text-muted-foreground mt-1 text-sm">
+              {categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''} found
+            </p>
+          )}
+        </div>
+
+        {categoryProducts.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
+            {categoryProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <Package className="w-16 h-16 text-muted-foreground mb-6" />
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">No Products Found</h2>
+            <p className="text-muted-foreground mb-6">
+              There are no products in this category yet.
+            </p>
+            <Link
+              href="/products"
+              className="bg-primary text-primary-foreground px-7 py-3 rounded-full font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              View All Products
+            </Link>
+          </div>
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default CategoryPage;

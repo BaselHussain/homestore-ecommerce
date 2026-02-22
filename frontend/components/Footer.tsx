@@ -52,8 +52,8 @@ const Footer = () => (
         <h5 className="text-sm font-semibold text-card mb-3">Support</h5>
         <ul className="space-y-2 text-sm">
           <li><span className="hover:text-primary transition-colors cursor-pointer">Shipping Info</span></li>
-          <li><span className="hover:text-primary transition-colors cursor-pointer">Returns & Exchanges</span></li>
-          <li><span className="hover:text-primary transition-colors cursor-pointer">Privacy Policy</span></li>
+          <li><Link href="/returns-exchanges" className="hover:text-primary transition-colors">Returns & Exchanges</Link></li>
+          <li><Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
         </ul>
       </div>
     </div>
