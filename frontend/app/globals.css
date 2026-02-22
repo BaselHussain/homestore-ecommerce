@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Fonts */
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+
+  /* Border radius */
+  --radius: 0.5rem;
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* Container */
+  --container-2xl: 1400px;
+
+  /* Colors - Light mode */
+  --color-background: hsl(30, 25%, 97%);
+  --color-foreground: hsl(220, 20%, 10%);
+
+  --color-card: hsl(0, 0%, 100%);
+  --color-card-foreground: hsl(220, 20%, 10%);
+
+  --color-popover: hsl(0, 0%, 100%);
+  --color-popover-foreground: hsl(220, 20%, 10%);
+
+  --color-primary: hsl(25, 90%, 52%);
+  --color-primary-foreground: hsl(0, 0%, 100%);
+
+  --color-secondary: hsl(30, 20%, 94%);
+  --color-secondary-foreground: hsl(220, 20%, 10%);
+
+  --color-muted: hsl(30, 15%, 92%);
+  --color-muted-foreground: hsl(220, 10%, 46%);
+
+  --color-accent: hsl(30, 30%, 90%);
+  --color-accent-foreground: hsl(220, 20%, 10%);
+
+  --color-destructive: hsl(0, 84.2%, 60.2%);
+  --color-destructive-foreground: hsl(210, 40%, 98%);
+
+  --color-border: hsl(30, 15%, 88%);
+  --color-input: hsl(30, 15%, 88%);
+  --color-ring: hsl(25, 90%, 52%);
+
+  /* Sidebar colors */
+  --color-sidebar: hsl(0, 0%, 98%);
+  --color-sidebar-foreground: hsl(240, 5.3%, 26.1%);
+  --color-sidebar-primary: hsl(240, 5.9%, 10%);
+  --color-sidebar-primary-foreground: hsl(0, 0%, 98%);
+  --color-sidebar-accent: hsl(240, 4.8%, 95.9%);
+  --color-sidebar-accent-foreground: hsl(240, 5.9%, 10%);
+  --color-sidebar-border: hsl(220, 13%, 91%);
+  --color-sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+
+  /* Announcement bar */
+  --color-announcement: hsl(220, 20%, 10%);
+  --color-announcement-foreground: hsl(0, 0%, 100%);
+
+  /* Footer */
+  --color-footer: hsl(220, 20%, 10%);
+  --color-footer-foreground: hsl(30, 15%, 80%);
+
+  /* Badges */
+  --color-badge-new: hsl(145, 60%, 40%);
+  --color-badge-sale: hsl(0, 75%, 55%);
+  --color-badge-out: hsl(220, 10%, 46%);
+
+  /* Hero */
+  --color-hero-overlay: hsl(30, 30%, 85%);
+
+  /* Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.6s ease-out forwards;
+  --animate-slide-up: slide-up 0.8s ease-out forwards;
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* shadcn/ui variable compatibility layer */
+:root {
+  --background: 30 25% 97%;
+  --foreground: 220 20% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 20% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 20% 10%;
+  --primary: 25 90% 52%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 30 20% 94%;
+  --secondary-foreground: 220 20% 10%;
+  --muted: 30 15% 92%;
+  --muted-foreground: 220 10% 46%;
+  --accent: 30 30% 90%;
+  --accent-foreground: 220 20% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 30 15% 88%;
+  --input: 30 15% 88%;
+  --ring: 25 90% 52%;
+  --radius: 0.5rem;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+  --hero-overlay: 30 30% 85%;
+  --badge-new: 145 60% 40%;
+  --badge-sale: 0 75% 55%;
+  --badge-out: 220 10% 46%;
+  --announcement-bg: 220 20% 10%;
+  --announcement-fg: 0 0% 100%;
+  --footer-bg: 220 20% 10%;
+  --footer-fg: 30 15% 80%;
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 25 90% 52%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+  --sidebar-background: 240 5.9% 10%;
+  --sidebar-foreground: 240 4.8% 95.9%;
+  --sidebar-primary: 224.3 76.3% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 240 4.8% 95.9%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

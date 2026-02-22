@@ -213,5 +213,16 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - TypeScript with Node.js 20.x + Express.js, Prisma, @prisma/client, dotenv, cors, zod (for validation) (001-backend-setup)
 - Neon Serverless PostgreSQL database with Prisma ORM (001-backend-setup)
 
+## Available Sub-Agents
+- frontend-ui-replicator: Use this agent when you need to replicate an existing UI exactly from a demo project into Next.js with shadcn/ui and Tailwind. This agent specializes in copying layout, components, styling, colors, fonts, and responsiveness exactly as-is without redesigning. Use when given a reference UI to duplicate, especially when working with the homestore-sparkle demo folder or similar Vite React UI as source material.
+- frontend-enhancer: Use this agent when you need to enhance Next.js UI components with shadcn/ui, implement dark/light theme support, or create responsive designs that match the homestore-sparkle demo styling. This agent should be called when working on UI improvements, adding new shadcn/ui components, or implementing theme systems.
+
+## Frontend Implementation Approach
+- First, replicate the homestore-sparkle demo UI exactly as-is in the Next.js frontend
+- Copy/clone all existing features and UI elements from homestore-sparkle without removing any
+- Then add advanced e-commerce features (product listing, PDP, cart, checkout, wishlist) on top of the replicated UI
+- Maintain 100% UI fidelity to the original homestore-sparkle design
+- Use shadcn/ui components for new functionality while preserving existing UI elements
+
 ## Recent Changes
 - 001-backend-setup: Added TypeScript with Node.js 20.x + Express.js, Prisma, @prisma/client, dotenv, cors, zod (for validation)
