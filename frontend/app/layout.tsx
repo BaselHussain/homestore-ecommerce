@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSerifDisplay.variable} ${plusJakartaSans.variable} antialiased`}
+        className={`${dmSerifDisplay.variable} ${plusJakartaSans.variable} antialiased overflow-x-hidden`}
       >
         <CartProvider>
           {children}

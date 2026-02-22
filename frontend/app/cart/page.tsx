@@ -89,18 +89,18 @@ export default function CartPage() {
             <div className="space-y-3 text-sm border-b border-border pb-4 mb-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-foreground font-medium">€{subtotal.toFixed(2)}</span>
+                <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span className="text-foreground font-medium">
-                  {shipping === 0 ? 'Free' : `€${shipping.toFixed(2)}`}
+                  {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
                 </span>
               </div>
             </div>
             <div className="flex justify-between text-lg font-bold text-foreground mb-6">
               <span>Total</span>
-              <span>€{total.toFixed(2)}</span>
+              <span>${total.toFixed(2)}</span>
             </div>
             <LightSheenButton
               onClick={() => router.push('/checkout')}
@@ -111,7 +111,7 @@ export default function CartPage() {
             </LightSheenButton>
             {subtotal < 50 && (
               <p className="text-xs text-muted-foreground text-center mt-3">
-                Add €{(50 - subtotal).toFixed(2)} more for free delivery
+                Add ${(50 - subtotal).toFixed(2)} more for free delivery
               </p>
             )}
           </div>

@@ -120,10 +120,10 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
-              <span className="text-3xl font-bold text-foreground">€{product.price.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-foreground">${product.price.toFixed(2)}</span>
               {product.originalPrice && (
                 <span className="text-lg text-muted-foreground line-through">
-                  €{product.originalPrice.toFixed(2)}
+                  ${product.originalPrice.toFixed(2)}
                 </span>
               )}
               {product.badge === 'sale' && product.originalPrice && (
@@ -212,7 +212,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span className="font-medium text-foreground">Free over €50</span>
+                <span className="font-medium text-foreground">Free over $50</span>
               </div>
             </div>
           </div>

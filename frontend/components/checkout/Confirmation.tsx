@@ -41,15 +41,15 @@ const Confirmation = ({ order, subtotal }: ConfirmationProps) => {
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-medium">€{subtotal.toFixed(2)}</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Shipping</span>
-            <span className="font-medium">{shipping === 0 ? 'Free' : `€${shipping.toFixed(2)}`}</span>
+            <span className="font-medium">{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
           </div>
           <div className="flex justify-between border-t border-border pt-2 mt-2">
             <span className="font-bold text-foreground">Total Paid</span>
-            <span className="font-bold text-primary">€{total.toFixed(2)}</span>
+            <span className="font-bold text-primary">${total.toFixed(2)}</span>
           </div>
         </div>
       </div>

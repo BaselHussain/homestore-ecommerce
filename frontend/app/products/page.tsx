@@ -115,8 +115,8 @@ function ProductsContent() {
             onClick={() => handleCategoryFilter('')}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
               !categoryFilter
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary'
+                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
+                : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary hover:shadow-md hover:shadow-primary/20'
             }`}
           >
             All
@@ -127,8 +127,8 @@ function ProductsContent() {
               onClick={() => handleCategoryFilter(cat.slug)}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
                 categoryFilter === cat.slug
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary'
+                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
+                  : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary hover:shadow-md hover:shadow-primary/20'
               }`}
             >
               {cat.name}
