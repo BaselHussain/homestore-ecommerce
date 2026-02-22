@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  password_hash String
+  created_at    DateTime   @default(now())
+
+  cart      Cart[]
+  wishlist  Wishlist[]
+  orders    Order[]
+
+  @@map("users")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int
+  category    String
+  images      Json
+  created_at  DateTime @default(now())
+
+  cart_items     Cart[]
+  wishlist_items Wishlist[]
+
+  @@map("products")
+}
+
+model Cart {
+  id         String   @id @default(cuid())
+  user_id    String   @map("userId")
+  product_id String   @map("productId")
+  quantity   Int
+  created_at DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("cart_items")
+}
+
+model Wishlist {
+  id         String   @id @default(cuid())
+  user_id    String   @map("userId")
+  product_id String   @map("productId")
+  created_at DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, product_id])
+  @@map("wishlist_items")
+}
+
+model Order {
+  id               String   @id @default(cuid())
+  user_id          String   @map("userId")
+  total_amount     Decimal  @db.Decimal(10, 2) @map("totalAmount")
+  status           String   @default("Pending")
+  shipping_address Json     @map("shippingAddress")
+  items            Json
+  created_at       DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
