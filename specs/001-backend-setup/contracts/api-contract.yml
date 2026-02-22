@@ -1,0 +1,371 @@
+openapi: 3.0.0
+info:
+  title: Homestore E-Commerce API
+  description: Backend API for the Homestore e-commerce website
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  /api/products:
+    get:
+      summary: Get all products
+      description: Retrieve a list of all available products with search, filter, and sort capabilities
+      parameters:
+        - name: search
+          in: query
+          description: Search term to filter products
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Sort order (price, name, created_at)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        '500':
+          description: Server error
+    post:
+      summary: Create a new product (admin only)
+      description: Add a new product to the catalog (placeholder for future admin functionality)
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Invalid input
+        '500':
+          description: Server error
+
+  /api/products/{id}:
+    get:
+      summary: Get product by ID
+      description: Retrieve detailed information about a specific product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Product not found
+        '500':
+          description: Server error
+
+  /api/cart:
+    get:
+      summary: Get user's cart
+      description: Retrieve all items in the user's cart
+      responses:
+        '200':
+          description: Cart items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '500':
+          description: Server error
+    post:
+      summary: Add item to cart
+      description: Add a product to the user's cart with specified quantity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                  description: ID of the product to add
+                quantity:
+                  type: integer
+                  description: Number of items to add
+              required:
+                - productId
+                - quantity
+      responses:
+        '200':
+          description: Item added to cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+        '400':
+          description: Invalid input
+        '404':
+          description: Product not found
+        '500':
+          description: Server error
+
+  /api/wishlist:
+    get:
+      summary: Get user's wishlist
+      description: Retrieve all items in the user's wishlist
+      responses:
+        '200':
+          description: Wishlist items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistResponse'
+        '500':
+          description: Server error
+    post:
+      summary: Add item to wishlist
+      description: Add a product to the user's wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                  description: ID of the product to add
+              required:
+                - productId
+      responses:
+        '200':
+          description: Item added to wishlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistItem'
+        '400':
+          description: Invalid input
+        '404':
+          description: Product not found
+        '500':
+          description: Server error
+
+  /api/orders:
+    post:
+      summary: Create a new order
+      description: Create an order from the user's cart items (simulated checkout)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid input or cart empty
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique product identifier
+        name:
+          type: string
+          description: Product name
+        description:
+          type: string
+          description: Product description
+        price:
+          type: number
+          description: Price in USD
+        stock:
+          type: integer
+          description: Available quantity in stock
+        category:
+          type: string
+          description: Product category
+        images:
+          type: array
+          items:
+            type: string
+          description: Array of image URLs
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+      required:
+        - id
+        - name
+        - description
+        - price
+        - stock
+        - category
+        - images
+
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique cart item identifier
+        productId:
+          type: string
+          description: Reference to the product
+        quantity:
+          type: integer
+          description: Number of items
+        addedAt:
+          type: string
+          format: date-time
+          description: When added to cart
+      required:
+        - id
+        - productId
+        - quantity
+        - addedAt
+
+    CartResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        total:
+          type: number
+          description: Total cart value
+
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique wishlist item identifier
+        productId:
+          type: string
+          description: Reference to the product
+        addedAt:
+          type: string
+          format: date-time
+          description: When added to wishlist
+      required:
+        - id
+        - productId
+        - addedAt
+
+    WishlistResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WishlistItem'
+
+    OrderRequest:
+      type: object
+      properties:
+        shippingAddress:
+          type: object
+          properties:
+            street:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            zip:
+              type: string
+            country:
+              type: string
+          required:
+            - street
+            - city
+            - state
+            - zip
+            - country
+      required:
+        - shippingAddress
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique order identifier
+        userId:
+          type: string
+          description: Reference to the user
+        totalAmount:
+          type: number
+          description: Total order amount
+        status:
+          type: string
+          description: Order status
+          enum: [Pending, Confirmed, Processing, Shipped, Delivered, Cancelled, Refunded]
+        shippingAddress:
+          type: object
+          properties:
+            street:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            zip:
+              type: string
+            country:
+              type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: string
+              name:
+                type: string
+              price:
+                type: number
+              quantity:
+                type: integer
+        createdAt:
+          type: string
+          format: date-time
+          description: Order creation timestamp
+      required:
+        - id
+        - userId
+        - totalAmount
+        - status
+        - shippingAddress
+        - items
+        - createdAt

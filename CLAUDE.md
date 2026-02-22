@@ -208,3 +208,10 @@ Wait for consent; never auto-create ADRs. Group related decisions (stacks, authe
 
 ## Code Standards
 See `.specify/memory/constitution.md` for code quality, testing, performance, security, and architecture principles.
+
+## Active Technologies
+- TypeScript with Node.js 20.x + Express.js, Prisma, @prisma/client, dotenv, cors, zod (for validation) (001-backend-setup)
+- Neon Serverless PostgreSQL database with Prisma ORM (001-backend-setup)
+
+## Recent Changes
+- 001-backend-setup: Added TypeScript with Node.js 20.x + Express.js, Prisma, @prisma/client, dotenv, cors, zod (for validation)
