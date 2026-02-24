@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Shield, Eye, Share2, Lock, Cookie, UserCheck, Bell, Mail } from "lucide-react";
+import AnimatedElement from "@/components/ui/animated-element";
 
 const sections = [
   {
@@ -68,47 +69,47 @@ export default function PrivacyPolicy() {
         {/* Hero */}
         <section className="py-20 md:py-28 bg-secondary">
           <div className="container mx-auto px-4 lg:px-8 text-center max-w-3xl">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Legal</span>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mt-4 mb-6">
-              Your Privacy Matters
-            </h1>
-            <p className="text-muted-foreground text-lg leading-relaxed mb-8">
-              Effective 1 January 2026 · We&apos;re committed to protecting your personal data and being transparent about how we use it.
-            </p>
-            {/* Trust badges */}
-            <div className="flex flex-wrap justify-center gap-3">
-              {trustBadges.map((badge) => (
-                <span
-                  key={badge.label}
-                  className="bg-primary/10 text-primary text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-1.5"
-                >
-                  <span>{badge.icon}</span>
-                  {badge.label}
-                </span>
-              ))}
-            </div>
+            <AnimatedElement animationType="fadeIn">
+              <span className="text-xs font-semibold tracking-widest uppercase text-primary">Legal</span>
+              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mt-4 mb-6">
+                Your Privacy Matters
+              </h1>
+              <p className="text-muted-foreground text-lg leading-relaxed mb-8">
+                Effective 1 January 2026 · We&apos;re committed to protecting your personal data and being transparent about how we use it.
+              </p>
+              {/* Trust badges */}
+              <div className="flex flex-wrap justify-center gap-3">
+                {trustBadges.map((badge) => (
+                  <span
+                    key={badge.label}
+                    className="bg-primary/10 text-primary text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-1.5"
+                  >
+                    <span>{badge.icon}</span>
+                    {badge.label}
+                  </span>
+                ))}
+              </div>
+            </AnimatedElement>
           </div>
         </section>
 
         {/* Policy Sections */}
         <section className="py-16">
           <div className="container mx-auto px-4 lg:px-8 max-w-3xl space-y-6">
-            {sections.map((s) => (
-              <div
-                key={s.title}
-                className="bg-card border border-border border-l-4 border-l-primary/30 rounded-xl p-8 relative overflow-hidden hover:shadow-md hover:shadow-primary/10 transition-all duration-300"
-              >
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                    <s.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="font-display text-xl font-bold text-foreground mb-3">{s.title}</h2>
-                    <p className="text-muted-foreground leading-relaxed">{s.content}</p>
+            {sections.map((s, i) => (
+              <AnimatedElement key={s.title} animationType="slideInUp" delay={i * 0.07}>
+                <div className="bg-card border border-border border-l-4 border-l-primary/30 rounded-xl p-8 relative overflow-hidden hover:shadow-md hover:shadow-primary/10 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                      <s.icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-display text-xl font-bold text-foreground mb-3">{s.title}</h2>
+                      <p className="text-muted-foreground leading-relaxed">{s.content}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </AnimatedElement>
             ))}
           </div>
         </section>
@@ -116,28 +117,30 @@ export default function PrivacyPolicy() {
         {/* Contact CTA */}
         <section className="py-12 bg-secondary">
           <div className="container mx-auto px-4 lg:px-8 max-w-2xl">
-            <div className="bg-card border border-border rounded-xl p-8 text-center">
-              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-6 h-6 text-primary" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-3">
-                Questions about your privacy?
-              </h2>
-              <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-                Contact our Data Protection team at{" "}
-                <a href="mailto:info@homestore.com" className="text-primary hover:underline font-medium">
-                  info@homestore.com
+            <AnimatedElement animationType="slideInUp">
+              <div className="bg-card border border-border rounded-xl p-8 text-center">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-6 h-6 text-primary" />
+                </div>
+                <h2 className="font-display text-2xl font-bold text-foreground mb-3">
+                  Questions about your privacy?
+                </h2>
+                <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+                  Contact our Data Protection team at{" "}
+                  <a href="mailto:info@homestore.com" className="text-primary hover:underline font-medium">
+                    info@homestore.com
+                  </a>
+                  {" "}or write to us at HomeStore, Zebbug, Malta.
+                </p>
+                <a
+                  href="mailto:info@homestore.com"
+                  className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 hover:scale-[1.02] before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+                >
+                  <Mail className="w-4 h-4" />
+                  Get in Touch
                 </a>
-                {" "}or write to us at HomeStore, Zebbug, Malta.
-              </p>
-              <a
-                href="mailto:info@homestore.com"
-                className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 hover:scale-[1.02] before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
-              >
-                <Mail className="w-4 h-4" />
-                Get in Touch
-              </a>
-            </div>
+              </div>
+            </AnimatedElement>
           </div>
         </section>
       </main>

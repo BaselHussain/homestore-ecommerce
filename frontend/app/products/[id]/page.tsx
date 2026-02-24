@@ -13,6 +13,7 @@ import { products as mockProducts } from '@/lib/products-mock';
 import { useCartStore } from '@/lib/cart-store';
 import { useWishlistStore } from '@/lib/wishlist-store';
 import { useToast } from '@/hooks/use-toast';
+import AnimatedElement from '@/components/ui/animated-element';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -86,13 +87,16 @@ export default function ProductDetailPage({ params }: PageProps) {
 
         <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
           {/* Image with zoom */}
-          <ProductImageZoom
-            src={product.image}
-            alt={product.name}
-            className="aspect-square"
-          />
+          <AnimatedElement animationType="fadeIn">
+            <ProductImageZoom
+              src={product.image}
+              alt={product.name}
+              className="aspect-square"
+            />
+          </AnimatedElement>
 
           {/* Product Info */}
+          <AnimatedElement animationType="slideInRight">
           <div className="flex flex-col justify-center">
             <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2">
               {product.category}
@@ -216,15 +220,20 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
             </div>
           </div>
+          </AnimatedElement>
         </div>
 
         {/* Related Products */}
         {related.length > 0 && (
           <div className="mt-20">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-8">You May Also Like</h2>
+            <AnimatedElement animationType="fadeIn">
+              <h2 className="font-display text-2xl font-bold text-foreground mb-8">You May Also Like</h2>
+            </AnimatedElement>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
-              {related.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {related.map((p, i) => (
+                <AnimatedElement key={p.id} animationType="slideInUp" delay={i * 0.08}>
+                  <ProductCard product={p} />
+                </AnimatedElement>
               ))}
             </div>
           </div>

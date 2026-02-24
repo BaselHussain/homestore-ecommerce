@@ -114,10 +114,10 @@ const Header = () => {
             >
               <Search className={`w-5 h-5 transition-transform duration-300 ${searchOpen ? "scale-110" : ""}`} />
             </button>
-            <Link href="/orders" className="relative p-2 hover:text-primary transition-colors" aria-label="Orders">
+            <Link href="/orders" className="relative p-2 hover:text-primary transition-colors hidden md:block" aria-label="Orders">
               <ClipboardList className="w-5 h-5" />
             </Link>
-            <Link href="/wishlist" className="relative p-2 hover:text-primary transition-colors" aria-label="Wishlist">
+            <Link href="/wishlist" className="relative p-2 hover:text-primary transition-colors hidden md:block" aria-label="Wishlist">
               <Heart className="w-5 h-5" />
               {wishlistCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
@@ -184,36 +184,68 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Nav */}
-        {mobileOpen && (
-          <nav className="md:hidden border-t border-border bg-card px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                href={link.path}
-                onClick={() => setMobileOpen(false)}
-                className={`block text-sm font-medium py-2 ${
-                  pathname === link.path ? "text-primary" : "text-foreground"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="pt-2 border-t border-border">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Categories</h3>
-              {categories.map((category) => (
+        {/* Mobile Nav — always in DOM, animated via grid-rows */}
+        <div
+          className={`md:hidden grid transition-all duration-300 ease-in-out ${
+            mobileOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
+        >
+          <div className="overflow-hidden">
+            <nav
+              className={`border-t border-border bg-card px-4 py-4 space-y-3 transition-all duration-300 ${
+                mobileOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+              }`}
+            >
+              {navLinks.map((link) => (
                 <Link
-                  key={category.id}
-                  href={`/categories/${category.slug}`}
+                  key={link.path}
+                  href={link.path}
                   onClick={() => setMobileOpen(false)}
-                  className="block text-sm text-foreground py-1.5 hover:text-primary"
+                  className={`block text-sm font-medium py-2 ${
+                    pathname === link.path ? "text-primary" : "text-foreground"
+                  }`}
                 >
-                  {category.name}
+                  {link.label}
                 </Link>
               ))}
-            </div>
-          </nav>
-        )}
+              <div className="pt-2 border-t border-border">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Categories</h3>
+                {categories.map((category) => (
+                  <Link
+                    key={category.id}
+                    href={`/categories/${category.slug}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="block text-sm text-foreground py-1.5 hover:text-primary"
+                  >
+                    {category.name}
+                  </Link>
+                ))}
+              </div>
+              <div className="pt-2 border-t border-border">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Account</h3>
+                <Link
+                  href="/orders"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2 text-sm py-1.5 hover:text-primary ${pathname === "/orders" ? "text-primary" : "text-foreground"}`}
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  My Orders
+                </Link>
+                <Link
+                  href="/wishlist"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2 text-sm py-1.5 hover:text-primary ${pathname === "/wishlist" ? "text-primary" : "text-foreground"}`}
+                >
+                  <Heart className="w-4 h-4" />
+                  Wishlist
+                  {wishlistCount > 0 && (
+                    <span className="text-xs font-semibold text-primary">({wishlistCount})</span>
+                  )}
+                </Link>
+              </div>
+            </nav>
+          </div>
+        </div>
       </header>
     </>
   );

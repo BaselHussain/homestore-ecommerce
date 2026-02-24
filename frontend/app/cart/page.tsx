@@ -10,6 +10,7 @@ import ProductCard from '@/components/ProductCard';
 import LightSheenButton from '@/components/ui/light-sheen-button';
 import { useCartStore } from '@/lib/cart-store';
 import { products as allProducts } from '@/lib/products-mock';
+import AnimatedElement from '@/components/ui/animated-element';
 
 export default function CartPage() {
   const router = useRouter();
@@ -130,18 +131,22 @@ export default function CartPage() {
         {/* People also buy */}
         {suggested.length > 0 && (
           <div className="mt-16">
-            <div className="flex items-end justify-between mb-6">
-              <div>
-                <span className="text-xs font-semibold tracking-widest uppercase text-primary">Recommendations</span>
-                <h2 className="font-display text-2xl font-bold text-foreground mt-1">People Also Buy</h2>
+            <AnimatedElement animationType="fadeIn">
+              <div className="flex items-end justify-between mb-6">
+                <div>
+                  <span className="text-xs font-semibold tracking-widest uppercase text-primary">Recommendations</span>
+                  <h2 className="font-display text-2xl font-bold text-foreground mt-1">People Also Buy</h2>
+                </div>
+                <Link href="/products" className="text-sm font-medium text-primary hover:underline hidden sm:block">
+                  View all
+                </Link>
               </div>
-              <Link href="/products" className="text-sm font-medium text-primary hover:underline hidden sm:block">
-                View all
-              </Link>
-            </div>
+            </AnimatedElement>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
-              {suggested.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {suggested.map((product, i) => (
+                <AnimatedElement key={product.id} animationType="slideInUp" delay={i * 0.08}>
+                  <ProductCard product={product} />
+                </AnimatedElement>
               ))}
             </div>
           </div>

@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { products, categories } from '@/lib/products-mock';
+import AnimatedElement from '@/components/ui/animated-element';
 
 const CategoryPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -37,36 +38,42 @@ const CategoryPage = () => {
           <span className="text-foreground font-medium">{displayName}</span>
         </nav>
 
-        <div className="mb-8">
-          <span className="text-xs font-semibold tracking-widest uppercase text-primary">Category</span>
-          <h1 className="font-display text-4xl font-bold text-foreground mt-1">{displayName}</h1>
-          {categoryProducts.length > 0 && (
-            <p className="text-muted-foreground mt-1 text-sm">
-              {categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''} found
-            </p>
-          )}
-        </div>
+        <AnimatedElement animationType="fadeIn">
+          <div className="mb-8">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Category</span>
+            <h1 className="font-display text-4xl font-bold text-foreground mt-1">{displayName}</h1>
+            {categoryProducts.length > 0 && (
+              <p className="text-muted-foreground mt-1 text-sm">
+                {categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''} found
+              </p>
+            )}
+          </div>
+        </AnimatedElement>
 
         {categoryProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
-            {categoryProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {categoryProducts.map((product, i) => (
+              <AnimatedElement key={product.id} animationType="slideInUp" delay={(i % 4) * 0.07}>
+                <ProductCard product={product} />
+              </AnimatedElement>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Package className="w-16 h-16 text-muted-foreground mb-6" />
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">No Products Found</h2>
-            <p className="text-muted-foreground mb-6">
-              There are no products in this category yet.
-            </p>
-            <Link
-              href="/products"
-              className="bg-primary text-primary-foreground px-7 py-3 rounded-full font-semibold text-sm hover:opacity-90 transition-opacity"
-            >
-              View All Products
-            </Link>
-          </div>
+          <AnimatedElement animationType="fadeIn">
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <Package className="w-16 h-16 text-muted-foreground mb-6" />
+              <h2 className="font-display text-2xl font-bold text-foreground mb-2">No Products Found</h2>
+              <p className="text-muted-foreground mb-6">
+                There are no products in this category yet.
+              </p>
+              <Link
+                href="/products"
+                className="bg-primary text-primary-foreground px-7 py-3 rounded-full font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                View All Products
+              </Link>
+            </div>
+          </AnimatedElement>
         )}
       </main>
       <Footer />

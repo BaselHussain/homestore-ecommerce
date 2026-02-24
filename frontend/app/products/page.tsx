@@ -11,6 +11,7 @@ import SearchBar from '@/components/SearchBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { products as mockProducts, categories } from '@/lib/products-mock';
 import type { Product } from '@/lib/products-mock';
+import AnimatedElement from '@/components/ui/animated-element';
 
 const ProductSkeleton = () => (
   <div className="rounded-xl overflow-hidden border border-border bg-card">
@@ -92,6 +93,7 @@ function ProductsContent() {
           <span className="text-foreground font-medium">Products</span>
         </nav>
 
+        <AnimatedElement animationType="fadeIn">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
             <span className="text-xs font-semibold tracking-widest uppercase text-primary">Catalogue</span>
@@ -108,6 +110,7 @@ function ProductsContent() {
             className="w-full md:w-72"
           />
         </div>
+        </AnimatedElement>
 
         {/* Category filters */}
         <div className="flex flex-wrap gap-2 mb-8">
