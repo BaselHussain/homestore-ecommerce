@@ -125,10 +125,7 @@ export default function ReturnsExchanges() {
                   key={step.title}
                   className="bg-card border border-border rounded-xl p-6 relative overflow-hidden hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300"
                 >
-                  {/* Faded step number */}
-                  <span className="absolute -top-3 -right-2 font-display text-8xl font-bold text-foreground/5 select-none leading-none">
-                    {step.step}
-                  </span>
+
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-4 relative z-10">
                     <step.icon className="w-5 h-5 text-primary" />
                   </div>

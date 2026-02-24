@@ -98,10 +98,7 @@ export default function PrivacyPolicy() {
                 key={s.title}
                 className="bg-card border border-border border-l-4 border-l-primary/30 rounded-xl p-8 relative overflow-hidden hover:shadow-md hover:shadow-primary/10 transition-all duration-300"
               >
-                {/* Faded number */}
-                <span className="absolute -top-4 -right-2 font-display text-8xl font-bold text-foreground/5 select-none leading-none">
-                  {s.number}
-                </span>
+
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                     <s.icon className="w-6 h-6 text-primary" />
