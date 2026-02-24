@@ -9,6 +9,7 @@ import LightSheenButton from '@/components/ui/light-sheen-button';
 import { useWishlistStore } from '@/lib/wishlist-store';
 import { useCartStore } from '@/lib/cart-store';
 import { useToast } from '@/hooks/use-toast';
+import AnimatedElement from '@/components/ui/animated-element';
 
 export default function WishlistPage() {
   const items = useWishlistStore((s) => s.items);
@@ -63,28 +64,30 @@ export default function WishlistPage() {
           <span className="text-foreground font-medium">Wishlist</span>
         </nav>
 
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Saved Items</span>
-            <h1 className="font-display text-4xl font-bold text-foreground mt-1">My Wishlist</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {items.length} item{items.length !== 1 ? 's' : ''} saved
-            </p>
+        <AnimatedElement animationType="fadeIn">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <span className="text-xs font-semibold tracking-widest uppercase text-primary">Saved Items</span>
+              <h1 className="font-display text-4xl font-bold text-foreground mt-1">My Wishlist</h1>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {items.length} item{items.length !== 1 ? 's' : ''} saved
+              </p>
+            </div>
+            <Link
+              href="/products"
+              className="text-sm font-medium text-primary hover:underline hidden md:block"
+            >
+              Continue Shopping
+            </Link>
           </div>
-          <Link
-            href="/products"
-            className="text-sm font-medium text-primary hover:underline hidden md:block"
-          >
-            Continue Shopping
-          </Link>
-        </div>
+        </AnimatedElement>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {items.map(({ product }) => {
+          {items.map(({ product }, i) => {
             const isOutOfStock = product.badge === 'out-of-stock';
             return (
+              <AnimatedElement key={product.id} animationType="slideInUp" delay={(i % 4) * 0.08}>
               <div
-                key={product.id}
                 className="group border border-border rounded-xl overflow-hidden bg-card shadow-md hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1"
               >
                 <Link href={`/product/${product.id}`} className="block">
@@ -138,6 +141,7 @@ export default function WishlistPage() {
                   </div>
                 </div>
               </div>
+              </AnimatedElement>
             );
           })}
         </div>

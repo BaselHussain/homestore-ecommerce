@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/products-mock";
@@ -59,6 +59,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           src={product.image}
           alt={product.name}
           fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
           className={`object-cover transition-all duration-500 group-hover:scale-105 ${
             isOutOfStock ? "opacity-60" : "group-hover:brightness-75"
           }`}
@@ -76,7 +77,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           className={`absolute top-3 right-3 p-1.5 rounded-full transition-all duration-300 z-10 ${
             isInWishlist
               ? "bg-primary text-primary-foreground opacity-100"
-              : "bg-card/80 text-foreground opacity-0 group-hover:opacity-100"
+              : "bg-card/80 text-foreground opacity-0 group-hover:opacity-100 pointer-events-none md:pointer-events-auto"
           }`}
           aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
         >
@@ -85,7 +86,7 @@ const ProductCard = ({ product }: { product: Product }) => {
         {!isOutOfStock ? (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-5 py-2 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] z-10 overflow-hidden whitespace-nowrap before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-5 py-2 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] z-10 overflow-hidden whitespace-nowrap pointer-events-none md:pointer-events-auto before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
           >
             Add to cart
           </button>
@@ -104,9 +105,21 @@ const ProductCard = ({ product }: { product: Product }) => {
             <span className="text-xs text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</span>
           )}
         </div>
-        <div className="flex items-center gap-1 mt-1.5">
-          <Star className="w-3 h-3 fill-primary text-primary" />
-          <span className="text-xs text-muted-foreground">({product.reviews})</span>
+        <div className="flex items-center justify-between mt-1.5">
+          <div className="flex items-center gap-1">
+            <Star className="w-3 h-3 fill-primary text-primary" />
+            <span className="text-xs text-muted-foreground">({product.reviews})</span>
+          </div>
+          {/* Mobile-only cart button — always visible since hover is unavailable */}
+          {!isOutOfStock && (
+            <button
+              onClick={handleAddToCart}
+              className="md:hidden p-1.5 rounded-full bg-primary text-primary-foreground"
+              aria-label="Add to cart"
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </Link>

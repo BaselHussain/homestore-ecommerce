@@ -13,6 +13,7 @@ const Hero = () => {
           src="/images/hero-image.jpg"
           alt="HomeStore — quality home goods"
           fill
+          sizes="100vw"
           className="object-cover"
           priority
         />
