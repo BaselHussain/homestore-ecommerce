@@ -6,9 +6,9 @@ import ProductCard from "@/components/ProductCard";
 import { categories, products } from "@/lib/products-mock";
 
 const Categories = () => (
-  <div className="min-h-screen">
+  <div className="flex-1 flex flex-col">
     <Header />
-    <main className="container mx-auto px-4 lg:px-8 py-12">
+    <main className="flex-1 container mx-auto px-4 lg:px-8 pt-12 pb-24">
       <h1 className="font-display text-4xl font-bold text-foreground mb-2">All Categories</h1>
       <p className="text-muted-foreground mb-10">Browse our full range of quality products for your home.</p>
 

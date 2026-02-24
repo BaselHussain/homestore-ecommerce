@@ -52,7 +52,7 @@ const Features = () => (
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="flex-1 flex flex-col">
       <Header />
       <AnimatedElement animationType="fadeIn">
         <Hero />

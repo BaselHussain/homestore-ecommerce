@@ -20,23 +20,22 @@ const CategoryGrid = () => (
       </AnimatedElement>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
         {categories.map((cat, i) => (
           <AnimatedElement
             key={cat.id}
             animationType="fadeIn"
             delay={i * 0.1}
-            className="block"
+            className={`block${i === 0 ? " md:row-span-2" : ""}`}
           >
             <Link
               href={`/categories/${cat.slug}`}
-              className={`group relative overflow-hidden rounded-lg bg-secondary ${
-                i === 0 ? "md:row-span-2" : ""
-              }`}
+              className="group relative overflow-hidden rounded-lg bg-secondary"
               style={{
                 minHeight: i === 0 ? "400px" : "200px",
                 display: "flex",
-                flexDirection: "column"
+                flexDirection: "column",
+                height: "100%"
               }}
             >
               <div className="relative flex-grow">
