@@ -4,7 +4,12 @@
       "Bash(tail:*)",
       "Bash(head:*)",
       "Bash(grep:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-new-feature.sh --number 4 --short-name \"user-auth\" --json 2>&1)",
+      "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-phr.sh --title \"create-user-authentication-spec\" --stage spec --feature 004-user-auth --json 2>&1)",
+      "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/check-prerequisites.sh --json --paths-only)",
+      "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-phr.sh --title \"clarify-authentication-requirements\" --stage spec --feature 004-user-auth --json 2>&1)",
+      "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-phr.sh --title \"additional-auth-clarifications\" --stage spec --feature 004-user-auth --json 2>&1)"
     ]
   }
 }
