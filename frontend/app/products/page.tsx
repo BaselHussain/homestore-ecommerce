@@ -82,9 +82,9 @@ function ProductsContent() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex-1 flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 lg:px-8 py-12">
+      <main className="flex-1 min-h-[60vh] container mx-auto px-4 lg:px-8 pt-12 pb-24">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-8">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
@@ -177,7 +177,7 @@ export default function ProductsPage() {
     <Suspense fallback={
       <div className="min-h-screen">
         <Header />
-        <main className="container mx-auto px-4 lg:px-8 py-12">
+        <main className="container mx-auto px-4 lg:px-8 pt-12 pb-24">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 mt-24">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="rounded-xl overflow-hidden border border-border bg-card">

@@ -6,8 +6,10 @@ import { ShoppingBag, ArrowLeft, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartItemRow from '@/components/CartItemRow';
+import ProductCard from '@/components/ProductCard';
 import LightSheenButton from '@/components/ui/light-sheen-button';
 import { useCartStore } from '@/lib/cart-store';
+import { products as allProducts } from '@/lib/products-mock';
 
 export default function CartPage() {
   const router = useRouter();
@@ -21,11 +23,19 @@ export default function CartPage() {
   const shipping = subtotal >= 50 ? 0 : 5;
   const total = subtotal + shipping;
 
+  const cartProductIds = new Set(items.map((i) => i.product.id));
+  const cartCategories = new Set(items.map((i) => i.product.category));
+  const notInCart = allProducts.filter((p) => !cartProductIds.has(p.id));
+  const suggested = [
+    ...notInCart.filter((p) => cartCategories.has(p.category)),
+    ...notInCart.filter((p) => !cartCategories.has(p.category)),
+  ].slice(0, 4);
+
   if (items.length === 0) {
     return (
-      <div className="min-h-screen">
+      <div className="flex-1 flex flex-col">
         <Header />
-        <main className="container mx-auto px-4 lg:px-8 py-20 text-center">
+        <main className="flex-1 container mx-auto px-4 lg:px-8 pt-20 pb-24 text-center">
           <ShoppingBag className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
           <h1 className="font-display text-3xl font-bold text-foreground mb-3">Your Cart is Empty</h1>
           <p className="text-muted-foreground mb-8">Looks like you haven't added anything yet.</p>
@@ -42,9 +52,9 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="flex-1 flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 lg:px-8 py-8">
+      <main className="flex-1 min-h-[60vh] container mx-auto px-4 lg:px-8 pt-8 pb-24">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
@@ -116,6 +126,26 @@ export default function CartPage() {
             )}
           </div>
         </div>
+
+        {/* People also buy */}
+        {suggested.length > 0 && (
+          <div className="mt-16">
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <span className="text-xs font-semibold tracking-widest uppercase text-primary">Recommendations</span>
+                <h2 className="font-display text-2xl font-bold text-foreground mt-1">People Also Buy</h2>
+              </div>
+              <Link href="/products" className="text-sm font-medium text-primary hover:underline hidden sm:block">
+                View all
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-8">
+              {suggested.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>

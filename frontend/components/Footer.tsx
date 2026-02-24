@@ -16,7 +16,7 @@ const Footer = () => (
             placeholder="Your email address"
             className="bg-muted-foreground/10 border border-muted-foreground/20 rounded-l-full px-5 py-3 text-sm text-card placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-full md:w-72"
           />
-          <LightSheenButton className="px-6 py-3 rounded-r-full text-sm font-semibold whitespace-nowrap" variant="primary">
+          <LightSheenButton className="px-8 md:px-6 py-3 rounded-r-full text-sm font-semibold whitespace-nowrap" variant="primary">
             Subscribe
           </LightSheenButton>
         </div>

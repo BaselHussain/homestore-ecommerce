@@ -124,7 +124,7 @@ const PaymentForm = ({ subtotal, onPay, onBack, isLoading }: PaymentFormProps) =
             type="button"
             onClick={onBack}
             disabled={isLoading}
-            className="flex-1 py-3.5 rounded-full border border-border text-sm font-semibold text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+            className="flex-1 py-3.5 rounded-full border border-border text-sm font-semibold text-foreground transition-all duration-300 hover:bg-accent hover:shadow-md hover:shadow-primary/20 hover:scale-[1.02] disabled:opacity-50"
           >
             Back
           </button>

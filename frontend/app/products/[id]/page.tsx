@@ -30,7 +30,7 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   if (!product) {
     return (
-      <div className="min-h-screen">
+      <div className="flex-1 flex flex-col">
         <Header />
         <div className="container mx-auto px-4 lg:px-8 py-20 text-center">
           <h1 className="font-display text-3xl font-bold text-foreground mb-4">Product Not Found</h1>
@@ -74,7 +74,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="container mx-auto px-4 lg:px-8 py-8">
+      <main className="flex-1 min-h-[60vh] container mx-auto px-4 lg:px-8 pt-8 pb-24">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-8 flex-wrap">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
