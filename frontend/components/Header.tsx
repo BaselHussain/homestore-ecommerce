@@ -100,7 +100,7 @@ const Header = () => {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="bg-announcement text-announcement-foreground text-center py-2.5 text-xs font-medium tracking-widest uppercase overflow-hidden h-8 flex items-center justify-center">
+      <div className="bg-announcement text-announcement-foreground text-center py-2.5 text-[7px] md:text-xs font-medium tracking-widest uppercase overflow-hidden h-8 flex items-center justify-center">
         <span
           style={{
             display: "inline-block",
