@@ -34,27 +34,22 @@ function ProductsContent() {
   const [loading, setLoading] = useState(true);
 
   const loadProducts = useCallback(() => {
-    setLoading(true);
-    // Simulate async fetch — use mock data with filtering
-    const timer = setTimeout(() => {
-      let filtered = [...mockProducts];
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        filtered = filtered.filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.category.toLowerCase().includes(q)
-        );
-      }
-      if (categoryFilter) {
-        filtered = filtered.filter(
-          (p) => p.category.toLowerCase().replace(/\s+/g, '-') === categoryFilter
-        );
-      }
-      setProducts(filtered);
-      setLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
+    let filtered = [...mockProducts];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q)
+      );
+    }
+    if (categoryFilter) {
+      filtered = filtered.filter(
+        (p) => p.category.toLowerCase().replace(/\s+/g, '-') === categoryFilter
+      );
+    }
+    setProducts(filtered);
+    setLoading(false);
   }, [searchQuery, categoryFilter]);
 
   useEffect(() => {

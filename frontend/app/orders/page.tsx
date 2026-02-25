@@ -230,7 +230,7 @@ export default function OrdersPage() {
                             <LightSheenButton
                               variant="outline"
                               size="sm"
-                              className="rounded-full border border-border text-xs font-semibold px-4 py-2"
+                              className="rounded-full border border-border text-xs font-semibold px-4 py-2 cursor-pointer"
                             >
                               View Details
                             </LightSheenButton>

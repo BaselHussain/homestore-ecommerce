@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Shield, Eye, Share2, Lock, Cookie, UserCheck, Bell, Mail } from "lucide-react";
@@ -132,13 +133,13 @@ export default function PrivacyPolicy() {
                   </a>
                   {" "}or write to us at HomeStore, Zebbug, Malta.
                 </p>
-                <a
-                  href="mailto:info@homestore.com"
+                <Link
+                  href="/contact"
                   className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 hover:scale-[1.02] before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
                 >
                   <Mail className="w-4 h-4" />
                   Get in Touch
-                </a>
+                </Link>
               </div>
             </AnimatedElement>
           </div>
