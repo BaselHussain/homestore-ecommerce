@@ -64,7 +64,7 @@ const Contact = () => (
               <LightSheenButton
                 type="submit"
                 variant="primary"
-                className="w-full py-3.5 rounded-full font-semibold"
+                className="w-full py-3.5 rounded-full font-semibold cursor-pointer"
               >
                 Send Message
               </LightSheenButton>

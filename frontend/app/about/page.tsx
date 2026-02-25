@@ -30,7 +30,7 @@ const About = () => (
 
         {/* Content */}
         <div className="container mx-auto px-4 lg:px-8 relative z-10 py-20">
-          <div className="max-w-4xl">
+          <div className="max-w-5xl">
             <AnimatedElement animationType="fadeIn" delay={0.2}>
               <span className="text-xs font-semibold tracking-widest uppercase text-primary">Our Story</span>
             </AnimatedElement>

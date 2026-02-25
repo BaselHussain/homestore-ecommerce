@@ -34,12 +34,12 @@ const Hero = () => {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-card/90 via-card/60 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-r from-card/90 via-card/60 to-transparent" />
       </div>
 
       {/* Content */}
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
-        <div className="max-w-3xl">
+        <div className="max-w-5xl">
           <AnimatedElement animationType="fadeIn" delay={0.2}>
             <span className="inline-flex items-center gap-2 bg-accent/80 backdrop-blur-sm text-accent-foreground text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full mb-6">
               ✦ New Collection 2026
@@ -81,7 +81,7 @@ const Hero = () => {
           </motion.h1>
 
           <motion.p
-            className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-8 max-w-3xl"
+            className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-8 max-w-5xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
@@ -92,13 +92,13 @@ const Hero = () => {
           <AnimatedElement animationType="slideInUp" delay={0.5} className="flex flex-wrap gap-4">
             <Link
               href="/categories"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-full font-semibold text-sm hover:opacity-90 transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 hover:scale-[1.02] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-full font-semibold text-sm hover:opacity-90 transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 hover:scale-[1.02] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-linear-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-full"
             >
               Shop Now <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/about"
-              className="inline-flex items-center gap-2 border border-foreground text-foreground px-7 py-3.5 rounded-full font-semibold text-sm hover:bg-foreground hover:text-background transition-all duration-300 hover:shadow-lg hover:shadow-foreground/30 hover:scale-[1.02] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+              className="inline-flex items-center gap-2 border border-foreground text-foreground px-7 py-3.5 rounded-full font-semibold text-sm hover:bg-foreground hover:text-background transition-all duration-300 hover:shadow-lg hover:shadow-foreground/30 hover:scale-[1.02] relative overflow-hidden before:content-[''] before:absolute before:top-0 before:-left-full before:w-full before:h-full before:bg-linear-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-full"
             >
               Our Story
             </Link>
@@ -113,7 +113,7 @@ const Hero = () => {
                     <CountUp
                       start={0}
                       end={stat.end}
-                      duration={2}
+                      duration={3}
                       suffix={stat.suffix}
                       enableScrollSpy
                       scrollSpyOnce

@@ -4,12 +4,19 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, ShoppingBag, Heart, Menu, X, ChevronDown, ChevronRight, ClipboardList } from "lucide-react";
+import { Search, ShoppingBag, Heart, Menu, X, ChevronDown, ChevronRight, Package } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlistStore } from "@/lib/wishlist-store";
 import { categories, products } from "@/lib/products-mock";
 
+const ANNOUNCEMENTS = [
+  "Free Delivery on Orders Over €50 · New Arrivals Every Week",
+  "Shop Local · 100% Authentic Maltese Souvenirs & Home Goods",
+];
+
 const Header = () => {
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+  const [announcementAnim, setAnnouncementAnim] = useState<"idle" | "exit" | "enter">("idle");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"menu" | "categories" | "account">("menu");
   const [openCategory, setOpenCategory] = useState<string | null>(null);
@@ -28,6 +35,19 @@ const Header = () => {
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
   ];
+
+  // Announcement bar cycling
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAnnouncementAnim("exit");
+      setTimeout(() => {
+        setAnnouncementIndex((i) => (i + 1) % ANNOUNCEMENTS.length);
+        setAnnouncementAnim("enter");
+        setTimeout(() => setAnnouncementAnim("idle"), 400);
+      }, 400);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Body scroll lock when mobile drawer is open
   useEffect(() => {
@@ -80,8 +100,22 @@ const Header = () => {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="bg-announcement text-announcement-foreground text-center py-2.5 text-xs font-medium tracking-widest uppercase">
-        Free Delivery on Orders Over €50 · New Arrivals Every Week
+      <div className="bg-announcement text-announcement-foreground text-center py-2.5 text-xs font-medium tracking-widest uppercase overflow-hidden h-8 flex items-center justify-center">
+        <span
+          style={{
+            display: "inline-block",
+            transition: "transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s",
+            transform:
+              announcementAnim === "exit"
+                ? "translateY(100%)"
+                : announcementAnim === "enter"
+                ? "translateY(-100%)"
+                : "translateY(0)",
+            opacity: announcementAnim === "idle" ? 1 : 0,
+          }}
+        >
+          {ANNOUNCEMENTS[announcementIndex]}
+        </span>
       </div>
 
       {/* Mobile Backdrop */}
@@ -224,7 +258,7 @@ const Header = () => {
                     : "text-foreground hover:text-primary hover:bg-accent"
                 }`}
               >
-                <ClipboardList className="w-4 h-4" />
+                <Package className="w-4 h-4" />
                 My Orders
               </Link>
               <Link
@@ -239,7 +273,7 @@ const Header = () => {
                 <Heart className="w-4 h-4" />
                 Wishlist
                 {wishlistCount > 0 && (
-                  <span className="ml-auto bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="bg-primary text-primary-foreground text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
@@ -306,7 +340,7 @@ const Header = () => {
                 className="relative p-2 hover:text-primary transition-colors hidden md:block"
                 aria-label="Orders"
               >
-                <ClipboardList className="w-5 h-5" />
+                <Package className="w-5 h-5" />
               </Link>
               <Link
                 href="/wishlist"
@@ -342,77 +376,85 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Mega Menu — positioned relative to container, spans logo→cart */}
+          {/* Mega Menu wrapper — handles hover and positioning */}
           <div
             onMouseEnter={openMegaMenu}
             onMouseLeave={closeMegaMenu}
-            className={`hidden md:block absolute top-full left-6 right-6 bg-card border border-border rounded-xl shadow-xl overflow-hidden transition-all duration-200 z-50 ${
+            className={`hidden md:block absolute top-full left-6 right-6 z-50 transition-all duration-200 ${
               megaMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
             }`}
           >
-            <div className="flex">
-              {/* Left: Categories grid — 3 columns */}
-              <div className="flex-1 grid grid-cols-4 gap-x-8 gap-y-6 p-8">
-                {categories.map((category) => {
-                  const catProducts = products
-                    .filter((p) => p.category === category.name)
-                    .slice(0, 5);
-                  return (
-                    <div key={category.id}>
-                      <Link
-                        href={`/categories/${category.slug}`}
-                        onClick={() => setMegaMenuOpen(false)}
-                        className="block font-semibold text-sm text-primary hover:underline mb-1"
-                      >
-                        {category.name}
-                      </Link>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {products.filter((p) => p.category === category.name).length} products
-                      </p>
-                      <div className="space-y-1">
-                        {catProducts.map((product) => (
-                          <Link
-                            key={product.id}
-                            href={`/products/${product.id}`}
-                            onClick={() => setMegaMenuOpen(false)}
-                            className="block text-xs text-foreground hover:text-primary truncate"
-                          >
-                            {product.name}
-                          </Link>
-                        ))}
+            {/* Dropdown panel — overflow-hidden for clean rounded corners */}
+            <div className="bg-card rounded-xl shadow-xl overflow-hidden">
+              <div className="flex items-stretch">
+                {/* Left: Categories grid */}
+                <div className="flex-1 grid grid-cols-3 gap-x-8 gap-y-6 p-8">
+                  {categories.map((category) => {
+                    const catProducts = products
+                      .filter((p) => p.category === category.name)
+                      .slice(0, 5);
+                    return (
+                      <div key={category.id}>
+                        <Link
+                          href={`/categories/${category.slug}`}
+                          onClick={() => setMegaMenuOpen(false)}
+                          className="block font-semibold text-sm text-primary hover:underline mb-1"
+                        >
+                          {category.name}
+                        </Link>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {products.filter((p) => p.category === category.name).length} products
+                        </p>
+                        <div className="space-y-1">
+                          {catProducts.map((product) => (
+                            <Link
+                              key={product.id}
+                              href={`/products/${product.id}`}
+                              onClick={() => setMegaMenuOpen(false)}
+                              className="block text-xs text-foreground hover:text-primary truncate"
+                            >
+                              {product.name}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
 
-              {/* Right: Featured image — full height of dropdown */}
-              <div className="relative w-56 shrink-0">
-                <Image
-                  src="/images/hero-image.jpg"
-                  alt="Explore Our Collections"
-                  fill
-                  className="object-cover"
-                  sizes="224px"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent flex items-end p-4">
-                  <div>
-                    <p className="text-[10px] text-white/70 font-semibold uppercase tracking-widest mb-1">
-                      Featured
+                {/* Right: Promo card */}
+                <div className="w-80 xl:w-90 shrink-0 self-stretch">
+                  <div className="h-full bg-primary flex flex-col p-6">
+                    <p className="text-[10px] text-primary-foreground/60 font-semibold uppercase tracking-widest mb-2">
+                      Special Offer
                     </p>
-                    <p className="text-white font-display font-bold text-base leading-tight">
-                      Explore Our Collections
+                    <p className="text-primary-foreground font-display font-bold text-2xl leading-tight mb-1">
+                      Shop Our<br />Collections
+                    </p>
+                    <p className="text-primary-foreground/70 text-xs mb-5">
+                      Exclusive deals on premium home goods
                     </p>
                     <Link
                       href="/products"
                       onClick={() => setMegaMenuOpen(false)}
-                      className="mt-2 inline-flex items-center gap-1 text-xs text-white/80 hover:text-white transition-colors"
+                      className="relative overflow-hidden inline-flex items-center gap-1.5 text-xs font-semibold bg-primary-foreground text-primary px-4 py-2 rounded-full w-fit transition-all duration-300 hover:shadow-lg hover:shadow-primary-foreground/50 hover:scale-[1.02] before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
                     >
-                      Shop all <ChevronRight className="w-3 h-3" />
+                      Shop now <ChevronRight className="w-3 h-3" />
                     </Link>
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Floating chair — sibling of dropdown, free to overflow */}
+            <div className="absolute bottom-[-110px] right-[-30px] xl:right-[-0px] w-96 h-96 pointer-events-none">
+              <Image
+                src="/images/chair-with-table.png"
+                alt="Featured product"
+                fill
+                className="object-contain drop-shadow-2xl"
+                sizes="384px"
+              />
             </div>
           </div>
         </div>
