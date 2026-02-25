@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${plusJakartaSans.variable} antialiased overflow-x-hidden min-h-screen flex flex-col`}
+        className={`${plusJakartaSans.variable} antialiased min-h-screen flex flex-col`}
       >
         <CartProvider>
           {children}

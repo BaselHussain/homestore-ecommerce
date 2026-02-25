@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, ArrowLeft, ChevronRight } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, ChevronRight, Flame } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CartItemRow from '@/components/CartItemRow';
@@ -23,6 +24,17 @@ export default function CartPage() {
 
   const shipping = subtotal >= 50 ? 0 : 5;
   const total = subtotal + shipping;
+
+  const COUNTDOWN_START = 3 * 60 + 60; // 4:00 (3 mins + 60 secs)
+  const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_START);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsLeft((s) => (s <= 1 ? COUNTDOWN_START : s - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+  const secs = String(secondsLeft % 60).padStart(2, '0');
 
   const cartProductIds = new Set(items.map((i) => i.product.id));
   const cartCategories = new Set(items.map((i) => i.product.category));
@@ -71,9 +83,24 @@ export default function CartPage() {
           Continue Shopping
         </Link>
 
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-8">
+        <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
           Shopping Cart ({cartCount})
         </h1>
+        <div className="flex justify-center mb-8 px-2">
+          <div className="inline-flex flex-wrap items-center justify-center gap-1.5 md:gap-3 bg-orange-500/10 border border-orange-500/30 rounded-full px-3 py-2 md:px-5 md:py-2.5">
+            <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500 fill-orange-500 shrink-0 animate-pulse" />
+            <span className="text-xs md:text-sm font-medium text-foreground">
+              Limited stock — complete your checkout in
+            </span>
+            <span className="font-bold text-orange-500 tabular-nums text-xs md:text-base bg-orange-500/15 px-2 md:px-3 py-0.5 rounded-full border border-orange-500/30">
+              {mins}m {secs}s
+            </span>
+            <span className="text-xs md:text-sm font-medium text-foreground">
+              before items sell out!
+            </span>
+            <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-500 fill-orange-500 shrink-0 animate-pulse" />
+          </div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-10">
           {/* Cart Items */}
@@ -88,7 +115,7 @@ export default function CartPage() {
             ))}
             <button
               onClick={clearCart}
-              className="text-xs mt-2 text-muted-foreground hover:text-destructive transition-colors"
+              className="text-xs mt-2 text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
             >
               Clear cart
             </button>
@@ -100,29 +127,29 @@ export default function CartPage() {
             <div className="space-y-3 text-sm border-b border-border pb-4 mb-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-foreground font-medium">${subtotal.toFixed(2)}</span>
+                <span className="text-foreground font-medium">€{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Shipping</span>
                 <span className="text-foreground font-medium">
-                  {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
+                  {shipping === 0 ? 'Free' : `€${shipping.toFixed(2)}`}
                 </span>
               </div>
             </div>
             <div className="flex justify-between text-lg font-bold text-foreground mb-6">
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>€{total.toFixed(2)}</span>
             </div>
             <LightSheenButton
               onClick={() => router.push('/checkout')}
               variant="primary"
-              className="w-full py-3.5 rounded-full font-semibold text-sm"
+              className="w-full py-3.5 rounded-full font-semibold text-sm cursor-pointer"
             >
               Proceed to Checkout
             </LightSheenButton>
             {subtotal < 50 && (
               <p className="text-xs text-muted-foreground text-center mt-3">
-                Add ${(50 - subtotal).toFixed(2)} more for free delivery
+                Add €{(50 - subtotal).toFixed(2)} more for free delivery
               </p>
             )}
           </div>

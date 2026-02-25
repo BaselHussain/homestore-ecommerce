@@ -225,7 +225,7 @@ export default function OrdersPage() {
                           {/* Right: Total + CTA */}
                           <div className="flex sm:flex-col items-center sm:items-end gap-3 shrink-0">
                             <span className="font-display text-lg font-bold text-foreground">
-                              ${order.total.toFixed(2)}
+                              €{order.total.toFixed(2)}
                             </span>
                             <LightSheenButton
                               variant="outline"

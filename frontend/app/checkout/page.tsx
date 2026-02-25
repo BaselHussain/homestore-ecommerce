@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import StepIndicator from '@/components/checkout/StepIndicator';
 import CartReview from '@/components/checkout/CartReview';
 import ShippingForm, { type ShippingFormValues } from '@/components/checkout/ShippingForm';
-import PaymentForm from '@/components/checkout/PaymentForm';
+import PaymentForm, { type PaymentMethod } from '@/components/checkout/PaymentForm';
 import Confirmation from '@/components/checkout/Confirmation';
 import { useCartStore } from '@/lib/cart-store';
 import type { Order } from '@/lib/types';
@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [orderSubtotal, setOrderSubtotal] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
 
   // Redirect if cart is empty and not on confirmation
   useEffect(() => {
@@ -37,14 +38,15 @@ export default function CheckoutPage() {
     setStep(3);
   };
 
-  const handlePay = async () => {
+  const handlePay = async (method: PaymentMethod) => {
     if (!shippingData) return;
     setIsProcessing(true);
     setOrderSubtotal(subtotal);
+    setPaymentMethod(method);
 
     try {
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Simulate processing (shorter delay for COD)
+      await new Promise((resolve) => setTimeout(resolve, method === 'cod' ? 600 : 1500));
 
       // Mock successful order
       const mockOrder: Order = {
@@ -131,6 +133,7 @@ export default function CheckoutPage() {
               <Confirmation
                 order={completedOrder}
                 subtotal={orderSubtotal}
+                paymentMethod={paymentMethod}
               />
             )}
           </div>

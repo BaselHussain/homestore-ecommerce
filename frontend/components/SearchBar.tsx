@@ -49,7 +49,7 @@ const SearchBar = ({ defaultValue = '', onSearch, placeholder = 'Search products
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
-        className="pl-9 rounded-full border-border focus-visible:ring-primary/30"
+        className="pl-9 rounded-full border-border"
         aria-label="Search products"
       />
     </form>

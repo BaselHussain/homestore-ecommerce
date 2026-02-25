@@ -16,7 +16,7 @@ const CartItemRow = ({ item, onUpdateQuantity, onRemove }: CartItemRowProps) => 
 
   return (
     <div className="flex gap-4 bg-card border border-border rounded-xl p-4">
-      <Link href={`/product/${product.id}`} className="shrink-0">
+      <Link href={`/products/${product.id}`} className="shrink-0">
         <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-secondary">
           <Image
             src={product.image}
@@ -30,7 +30,7 @@ const CartItemRow = ({ item, onUpdateQuantity, onRemove }: CartItemRowProps) => 
 
       <div className="flex-1 min-w-0">
         <Link
-          href={`/product/${product.id}`}
+          href={`/products/${product.id}`}
           className="font-semibold text-foreground text-sm hover:text-primary transition-colors line-clamp-2"
         >
           {product.name}
@@ -41,7 +41,7 @@ const CartItemRow = ({ item, onUpdateQuantity, onRemove }: CartItemRowProps) => 
           <div className="flex items-center border border-border rounded-full">
             <button
               onClick={() => onUpdateQuantity(product.id, quantity - 1)}
-              className="p-2 hover:text-primary transition-colors relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+              className="p-2 hover:text-primary transition-colors cursor-pointer relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
               aria-label="Decrease quantity"
             >
               <Minus className="w-3 h-3" />
@@ -49,21 +49,21 @@ const CartItemRow = ({ item, onUpdateQuantity, onRemove }: CartItemRowProps) => 
             <span className="w-8 text-center text-xs font-semibold">{quantity}</span>
             <button
               onClick={() => onUpdateQuantity(product.id, quantity + 1)}
-              className="p-2 hover:text-primary transition-colors relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+              className="p-2 hover:text-primary transition-colors cursor-pointer relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
               aria-label="Increase quantity"
             >
               <Plus className="w-3 h-3" />
             </button>
           </div>
           <span className="text-sm font-bold text-foreground">
-            ${(product.price * quantity).toFixed(2)}
+            €{(product.price * quantity).toFixed(2)}
           </span>
         </div>
       </div>
 
       <button
         onClick={() => onRemove(product.id)}
-        className="text-muted-foreground hover:text-destructive transition-colors self-start p-1"
+        className="text-muted-foreground hover:text-destructive transition-colors self-start p-1 cursor-pointer"
         aria-label="Remove item"
       >
         <Trash2 className="w-4 h-4" />

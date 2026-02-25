@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, Star, ShoppingBag } from "lucide-react";
+import { Heart, Star, ShoppingBag, Trash2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/products-mock";
@@ -20,7 +20,7 @@ const badgeLabels = {
   "out-of-stock": "Out of Stock",
 };
 
-const ProductCard = ({ product }: { product: Product }) => {
+const ProductCard = ({ product, wishlistMode = false }: { product: Product; wishlistMode?: boolean }) => {
   const isOutOfStock = product.badge === "out-of-stock";
   const { addToCart } = useCart();
   const { toast } = useToast();
@@ -71,22 +71,32 @@ const ProductCard = ({ product }: { product: Product }) => {
             {badgeLabels[product.badge]}
           </span>
         )}
-        {/* Wishlist button */}
-        <button
-          onClick={handleToggleWishlist}
-          className={`absolute top-3 right-3 p-1.5 rounded-full transition-all duration-300 z-10 ${
-            isInWishlist
-              ? "bg-primary text-primary-foreground opacity-100"
-              : "bg-card/80 text-foreground opacity-0 group-hover:opacity-100 pointer-events-none md:pointer-events-auto"
-          }`}
-          aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <Heart className={`w-3.5 h-3.5 ${isInWishlist ? "fill-current" : ""}`} />
-        </button>
+        {/* Wishlist / Remove button */}
+        {wishlistMode ? (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFromWishlist(product.id); }}
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-card/80 text-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 cursor-pointer hover:bg-destructive hover:text-destructive-foreground pointer-events-none md:pointer-events-auto"
+            aria-label="Remove from wishlist"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        ) : (
+          <button
+            onClick={handleToggleWishlist}
+            className={`absolute top-3 right-3 p-1.5 rounded-full transition-all duration-300 z-10 cursor-pointer ${
+              isInWishlist
+                ? "bg-primary text-primary-foreground opacity-100"
+                : "bg-card/80 text-foreground opacity-0 group-hover:opacity-100 pointer-events-none md:pointer-events-auto"
+            }`}
+            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Heart className={`w-3.5 h-3.5 ${isInWishlist ? "fill-current" : ""}`} />
+          </button>
+        )}
         {!isOutOfStock ? (
           <button
             onClick={handleAddToCart}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-5 py-2 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] z-10 overflow-hidden whitespace-nowrap pointer-events-none md:pointer-events-auto before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-5 py-2 rounded-full opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary/50 hover:scale-[1.02] z-10 overflow-hidden whitespace-nowrap pointer-events-none md:pointer-events-auto cursor-pointer before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
           >
             Add to cart
           </button>
@@ -100,9 +110,9 @@ const ProductCard = ({ product }: { product: Product }) => {
       <div className="p-3">
         <h3 className="font-body text-sm font-semibold text-foreground leading-tight">{product.name}</h3>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-sm font-bold text-foreground">${product.price.toFixed(2)}</span>
+          <span className="text-sm font-bold text-foreground">€{product.price.toFixed(2)}</span>
           {product.originalPrice && (
-            <span className="text-xs text-muted-foreground line-through">${product.originalPrice.toFixed(2)}</span>
+            <span className="text-xs text-muted-foreground line-through">€{product.originalPrice.toFixed(2)}</span>
           )}
         </div>
         <div className="flex items-center justify-between mt-1.5">
@@ -114,7 +124,7 @@ const ProductCard = ({ product }: { product: Product }) => {
           {!isOutOfStock && (
             <button
               onClick={handleAddToCart}
-              className="md:hidden p-1.5 rounded-full bg-primary text-primary-foreground"
+              className="md:hidden p-1.5 rounded-full bg-primary text-primary-foreground cursor-pointer"
               aria-label="Add to cart"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
