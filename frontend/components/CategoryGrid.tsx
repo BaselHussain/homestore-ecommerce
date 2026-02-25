@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { categories } from "@/lib/products-mock";
+import { categories, products } from "@/lib/products-mock";
 import AnimatedElement from "@/components/ui/animated-element";
 
 const CategoryGrid = () => (
@@ -50,7 +50,7 @@ const CategoryGrid = () => (
               </div>
               <div className="absolute bottom-0 left-0 p-5 z-10">
                 <h3 className="font-display text-lg font-bold text-card">{cat.name}</h3>
-                <p className="text-card/70 text-xs mt-0.5">{cat.productCount} products</p>
+                <p className="text-card/70 text-xs mt-0.5">{products.filter((p) => p.category === cat.name).length} products</p>
                 <span className="inline-block mt-2 text-xs font-semibold text-primary">Shop now</span>
               </div>
             </Link>

@@ -33,7 +33,7 @@ const Categories = () => (
               <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
               <div className="absolute bottom-0 left-0 p-5">
                 <h3 className="font-display text-lg font-bold text-card">{cat.name}</h3>
-                <p className="text-card/70 text-xs">{cat.productCount} products</p>
+                <p className="text-card/70 text-xs">{products.filter((p) => p.category === cat.name).length} products</p>
               </div>
             </Link>
           </AnimatedElement>

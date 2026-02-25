@@ -56,9 +56,9 @@ const sections = [
 ];
 
 const trustBadges = [
-  { icon: "🔒", label: "SSL Encrypted" },
-  { icon: "👁", label: "No Data Selling" },
-  { icon: "✉", label: "GDPR Compliant" },
+  { Icon: Lock, label: "SSL Encrypted" },
+  { Icon: Eye, label: "No Data Selling" },
+  { Icon: Mail, label: "GDPR Compliant" },
 ];
 
 export default function PrivacyPolicy() {
@@ -84,7 +84,7 @@ export default function PrivacyPolicy() {
                     key={badge.label}
                     className="bg-primary/10 text-primary text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-1.5"
                   >
-                    <span>{badge.icon}</span>
+                    <badge.Icon className="w-4 h-4" />
                     {badge.label}
                   </span>
                 ))}

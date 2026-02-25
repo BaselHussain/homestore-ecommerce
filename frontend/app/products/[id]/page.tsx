@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, Minus, Plus, ShoppingBag, Heart, ChevronRight } from 'lucide-react';
+import { useAnimate } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -23,11 +24,36 @@ export default function ProductDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const product = mockProducts.find((p) => p.id === id);
   const [qty, setQty] = useState(1);
+  const [scope, animate] = useAnimate();
   const addToCart = useCartStore((s) => s.addItem);
   const addToWishlist = useWishlistStore((s) => s.addItem);
   const removeFromWishlist = useWishlistStore((s) => s.removeItem);
   const isInWishlist = useWishlistStore((s) => s.items.some((i) => i.product.id === id));
   const { toast } = useToast();
+
+  const isOutOfStock = product?.badge === 'out-of-stock';
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Shake animation: first shake after 2.5s, then every 3s
+  useEffect(() => {
+    if (isOutOfStock || !scope.current) return;
+
+    const shake = () => {
+      if (scope.current) {
+        animate(scope.current, { x: [0, -8, 8, -8, 8, -4, 4, 0] }, { duration: 0.6, ease: "easeInOut" });
+      }
+    };
+
+    const timer = setTimeout(() => {
+      shake();
+      intervalRef.current = setInterval(shake, 3000);
+    }, 2500);
+
+    return () => {
+      clearTimeout(timer);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isOutOfStock, animate, scope]);
 
   if (!product) {
     return (
@@ -49,7 +75,6 @@ export default function ProductDetailPage({ params }: PageProps) {
     );
   }
 
-  const isOutOfStock = product.badge === 'out-of-stock';
   const related = mockProducts
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
@@ -124,10 +149,10 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
-              <span className="text-3xl font-bold text-foreground">${product.price.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-foreground">€{product.price.toFixed(2)}</span>
               {product.originalPrice && (
                 <span className="text-lg text-muted-foreground line-through">
-                  ${product.originalPrice.toFixed(2)}
+                  €{product.originalPrice.toFixed(2)}
                 </span>
               )}
               {product.badge === 'sale' && product.originalPrice && (
@@ -161,7 +186,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <div className="flex items-center border border-border rounded-full">
                   <button
                     onClick={() => setQty(Math.max(1, qty - 1))}
-                    className="p-3 hover:text-primary transition-colors"
+                    className="p-3 hover:text-primary transition-colors cursor-pointer"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="w-4 h-4" />
@@ -169,21 +194,23 @@ export default function ProductDetailPage({ params }: PageProps) {
                   <span className="w-10 text-center text-sm font-semibold">{qty}</span>
                   <button
                     onClick={() => setQty(qty + 1)}
-                    className="p-3 hover:text-primary transition-colors"
+                    className="p-3 hover:text-primary transition-colors cursor-pointer"
                     aria-label="Increase quantity"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
 
-                <LightSheenButton
-                  onClick={handleAddToCart}
-                  variant="primary"
-                  className="flex-1 inline-flex items-center justify-center gap-2 py-3.5 rounded-full font-semibold text-sm"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  Add to Cart
-                </LightSheenButton>
+                <div ref={scope} className="flex-1">
+                  <LightSheenButton
+                    onClick={handleAddToCart}
+                    variant="primary"
+                    className="w-full inline-flex items-center justify-center gap-2 py-3.5 rounded-full font-semibold text-sm cursor-pointer"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    Add to Cart
+                  </LightSheenButton>
+                </div>
               </div>
             ) : (
               <div className="bg-muted text-muted-foreground text-center py-3.5 rounded-full font-semibold text-sm mb-4">
@@ -194,7 +221,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Wishlist button */}
             <button
               onClick={handleToggleWishlist}
-              className={`flex items-center justify-center gap-2 py-3 rounded-full border text-sm font-semibold transition-all duration-300 mb-6 ${
+              className={`flex items-center justify-center gap-2 py-3 rounded-full border text-sm font-semibold transition-all duration-300 mb-6 cursor-pointer ${
                 isInWishlist
                   ? 'border-primary text-primary bg-primary/5'
                   : 'border-border text-foreground hover:border-primary hover:text-primary'
@@ -216,7 +243,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
               <div className="flex justify-between">
                 <span>Shipping</span>
-                <span className="font-medium text-foreground">Free over $50</span>
+                <span className="font-medium text-foreground">Free over €50</span>
               </div>
             </div>
           </div>

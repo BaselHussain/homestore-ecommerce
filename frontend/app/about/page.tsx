@@ -1,26 +1,83 @@
+'use client';
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Heart, Leaf, Users, Shield } from "lucide-react";
 import AnimatedElement from "@/components/ui/animated-element";
+
+const headingWords = ["We", "believe", "in", "beautiful", "things."];
 
 const About = () => (
   <div className="flex-1 flex flex-col">
     <Header />
     <main className="flex-1">
       {/* Hero Section */}
-      <section className="py-20 md:py-28 bg-secondary">
-        <div className="container mx-auto px-4 lg:px-8 text-center max-w-3xl">
-          <AnimatedElement animationType="fadeIn">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Our Story</span>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mt-4 mb-6">
-              We believe in{" "}
-              <span className="block">beautiful things.</span>
-            </h1>
-            <p className="text-muted-foreground text-lg leading-relaxed">
+      <section className="relative min-h-[70vh] flex items-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/about-banner.png"
+            alt="About HomeStore"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-card/90 via-card/60 to-transparent" />
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-4 lg:px-8 relative z-10 py-20">
+          <div className="max-w-4xl">
+            <AnimatedElement animationType="fadeIn" delay={0.2}>
+              <span className="text-xs font-semibold tracking-widest uppercase text-primary">Our Story</span>
+            </AnimatedElement>
+
+            {/* Word-by-word animated heading */}
+            <motion.h1
+              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mt-4 mb-6 text-foreground"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: { staggerChildren: 0.12, delayChildren: 0.3 },
+                },
+              }}
+            >
+              {headingWords.map((word, i) => {
+                const isLast = i === headingWords.length - 1;
+                return (
+                  <motion.span
+                    key={word}
+                    className={isLast ? "text-primary" : undefined}
+                    style={{ display: "inline-block", marginRight: "0.3em" }}
+                    variants={{
+                      hidden: { opacity: 0, x: -20 },
+                      visible: {
+                        opacity: 1,
+                        x: 0,
+                        transition: { duration: 0.4, ease: "easeOut" },
+                      },
+                    }}
+                  >
+                    {word}
+                  </motion.span>
+                );
+              })}
+            </motion.h1>
+
+            <motion.p
+              className="text-muted-foreground text-lg leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+            >
               HomeStore was founded with a simple idea: make it easy to discover and shop the world&apos;s most thoughtfully designed products — all in one place.
-            </p>
-          </AnimatedElement>
+            </motion.p>
+          </div>
         </div>
       </section>
 
@@ -29,7 +86,7 @@ const About = () => (
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
             <AnimatedElement animationType="slideInLeft">
-              <div className="aspect-[4/5] overflow-hidden rounded-xl relative">
+              <div className="aspect-[4/3] overflow-hidden rounded-xl relative">
                 <Image
                   src="/images/about-image.jpg"
                   alt="The HomeStore team workspace"

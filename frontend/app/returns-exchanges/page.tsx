@@ -83,15 +83,16 @@ export default function ReturnsExchanges() {
               {/* Trust pills */}
               <div className="flex flex-wrap justify-center gap-3">
                 {[
-                  "✓ 30-Day Returns",
-                  "✓ Free Exchanges",
-                  "✓ 5–7 Day Refunds",
-                ].map((pill) => (
+                  "30-Day Returns",
+                  "Free Exchanges",
+                  "5–7 Day Refunds",
+                ].map((label) => (
                   <span
-                    key={pill}
-                    className="bg-primary/10 text-primary text-xs font-semibold px-4 py-2 rounded-full"
+                    key={label}
+                    className="bg-primary/10 text-primary text-xs font-semibold px-4 py-2 rounded-full flex items-center gap-1.5"
                   >
-                    {pill}
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    {label}
                   </span>
                 ))}
               </div>

@@ -116,7 +116,7 @@ function ProductsContent() {
         <div className="flex flex-wrap gap-2 mb-8">
           <button
             onClick={() => handleCategoryFilter('')}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
               !categoryFilter
                 ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
                 : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary hover:shadow-md hover:shadow-primary/20'
@@ -128,7 +128,7 @@ function ProductsContent() {
             <button
               key={cat.id}
               onClick={() => handleCategoryFilter(cat.slug)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
                 categoryFilter === cat.slug
                   ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
                   : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary hover:shadow-md hover:shadow-primary/20'
