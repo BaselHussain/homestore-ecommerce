@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Heart, Leaf, Users, Shield } from "lucide-react";
 import AnimatedElement from "@/components/ui/animated-element";
+import CountUp from "react-countup";
 
 const headingWords = ["We", "believe", "in", "beautiful", "things."];
 
@@ -113,13 +114,23 @@ const About = () => (
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4">
                   {[
-                    { value: "50+", label: "Partner brands" },
-                    { value: "5.2K", label: "Products" },
-                    { value: "120K", label: "Happy customers" },
+                    { end: 50, suffix: "+", decimals: 0, label: "Partner brands" },
+                    { end: 5.2, suffix: "K", decimals: 1, label: "Products" },
+                    { end: 120, suffix: "K", decimals: 0, label: "Happy customers" },
                   ].map((stat, i) => (
                     <AnimatedElement key={stat.label} animationType="slideInUp" delay={i * 0.1}>
                       <div className="bg-secondary rounded-xl p-4 text-center">
-                        <div className="font-display text-2xl md:text-3xl font-bold text-foreground">{stat.value}</div>
+                        <div className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                          <CountUp
+                            start={0}
+                            end={stat.end}
+                            duration={3}
+                            decimals={stat.decimals}
+                            suffix={stat.suffix}
+                            enableScrollSpy
+                            scrollSpyOnce
+                          />
+                        </div>
                         <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
                       </div>
                     </AnimatedElement>
