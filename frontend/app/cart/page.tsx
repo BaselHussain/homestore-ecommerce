@@ -10,10 +10,11 @@ import CartItemRow from '@/components/CartItemRow';
 import ProductCard from '@/components/ProductCard';
 import LightSheenButton from '@/components/ui/light-sheen-button';
 import { useCartStore } from '@/lib/cart-store';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { products as allProducts } from '@/lib/products-mock';
 import AnimatedElement from '@/components/ui/animated-element';
 
-export default function CartPage() {
+function CartPageContent() {
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
@@ -181,5 +182,13 @@ export default function CartPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function CartPage() {
+  return (
+    <ProtectedRoute>
+      <CartPageContent />
+    </ProtectedRoute>
   );
 }

@@ -11,14 +11,19 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  password_hash String
-  created_at    DateTime   @default(now())
+  id             String    @id @default(cuid())
+  email          String    @unique
+  password_hash  String
+  name           String    @default("")
+  email_verified Boolean   @default(false)
+  last_login_at  DateTime?
+  created_at     DateTime  @default(now())
 
-  cart      Cart[]
-  wishlist  Wishlist[]
-  orders    Order[]
+  cart                  Cart[]
+  wishlist              Wishlist[]
+  orders                Order[]
+  addresses             Address[]
+  password_reset_tokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -67,14 +72,46 @@ model Wishlist {
 
 model Order {
   id               String   @id @default(cuid())
-  user_id          String   @map("userId")
+  user_id          String?  @map("userId")   // nullable for guest orders
+  guest_email      String?  @map("guestEmail")
   total_amount     Decimal  @db.Decimal(10, 2) @map("totalAmount")
-  status           String   @default("Pending")
+  status           String   @default("pending")
+  tracking_number  String?  @map("trackingNumber")
   shipping_address Json     @map("shippingAddress")
   items            Json
   created_at       DateTime @default(now())
 
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@map("orders")
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  user_id    String   @map("userId")
+  label      String   @default("Home")
+  street     String
+  city       String
+  state      String
+  zip_code   String   @map("zipCode")
+  country    String   @default("US")
+  is_default Boolean  @default(false) @map("isDefault")
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  user_id    String   @map("userId")
+  token      String   @unique
+  expires_at DateTime @map("expiresAt")
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
 }

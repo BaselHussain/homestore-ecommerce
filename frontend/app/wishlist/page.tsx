@@ -6,9 +6,10 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { useWishlistStore } from '@/lib/wishlist-store';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import AnimatedElement from '@/components/ui/animated-element';
 
-export default function WishlistPage() {
+function WishlistPageContent() {
   const items = useWishlistStore((s) => s.items);
 
   if (items.length === 0) {
@@ -70,5 +71,13 @@ export default function WishlistPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function WishlistPage() {
+  return (
+    <ProtectedRoute>
+      <WishlistPageContent />
+    </ProtectedRoute>
   );
 }

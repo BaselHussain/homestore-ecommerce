@@ -1,20 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { createError } from '../middlewares/errorHandler';
+import { AuthRequest } from '../middlewares/auth';
 
-const getUserId = (req: Request): string => {
-  const header = req.headers['x-user-id'];
-  const userId = Array.isArray(header) ? header[0] : header;
-  if (!userId) throw createError('x-user-id header is required', 400);
-  return userId;
+const getUserId = (req: AuthRequest): string => {
+  if (!req.userId) throw createError('Authentication required', 401);
+  return req.userId;
 };
 
 const addWishlistSchema = z.object({
   productId: z.string().min(1, 'productId is required'),
 });
 
-export const addItemToWishlist = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const addItemToWishlist = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
     const body = addWishlistSchema.parse(req.body);
@@ -49,7 +48,7 @@ export const addItemToWishlist = async (req: Request, res: Response, next: NextF
   }
 };
 
-export const getWishlistItems = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getWishlistItems = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
 
@@ -66,7 +65,7 @@ export const getWishlistItems = async (req: Request, res: Response, next: NextFu
   }
 };
 
-export const removeItemFromWishlist = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const removeItemFromWishlist = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
     const { id } = req.params;

@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { addCartItem, getCartItems, updateCartItem, removeCartItem } from '../controllers/cartController';
+import { authenticate } from '../middlewares/auth';
 
 const router = Router();
+router.use(authenticate);
 
 // GET /api/cart - get user's cart
 router.get('/', getCartItems);

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, ShoppingBag } from 'lucide-react';
+import { toast } from 'sonner';
 import Header from '@/components/Header';
 import StepIndicator from '@/components/checkout/StepIndicator';
 import CartReview from '@/components/checkout/CartReview';
@@ -11,10 +12,13 @@ import ShippingForm, { type ShippingFormValues } from '@/components/checkout/Shi
 import PaymentForm, { type PaymentMethod } from '@/components/checkout/PaymentForm';
 import Confirmation from '@/components/checkout/Confirmation';
 import { useCartStore } from '@/lib/cart-store';
+import { ordersApi } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Order } from '@/lib/types';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clearCart);
   const subtotal = useCartStore((s) => s.subtotal());
@@ -26,7 +30,7 @@ export default function CheckoutPage() {
   const [orderSubtotal, setOrderSubtotal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
 
-  // Redirect if cart is empty and not on confirmation
+  // Redirect if cart is empty and not on confirmation step
   useEffect(() => {
     if (items.length === 0 && step < 4) {
       router.push('/cart');
@@ -45,36 +49,44 @@ export default function CheckoutPage() {
     setPaymentMethod(method);
 
     try {
-      // Simulate processing (shorter delay for COD)
+      // Simulate processing delay (shorter for COD)
       await new Promise((resolve) => setTimeout(resolve, method === 'cod' ? 600 : 1500));
 
-      // Mock successful order
-      const mockOrder: Order = {
-        id: `HS${Date.now().toString().slice(-6)}`,
-        userId: 'guest',
-        totalAmount: subtotal + (subtotal >= 50 ? 0 : 5),
-        status: 'Confirmed',
-        shippingAddress: {
-          street: shippingData.street,
-          city: shippingData.city,
-          state: shippingData.state,
-          zip: shippingData.zip,
-          country: shippingData.country,
-        },
-        items: items.map((i) => ({
+      const shippingAddress = {
+        street: shippingData.street,
+        city: shippingData.city,
+        state: shippingData.state,
+        zip: shippingData.zip,
+        country: shippingData.country,
+      };
+
+      let order: Order;
+
+      if (user) {
+        // Authenticated: backend reads from DB cart
+        order = await ordersApi.create({ shippingAddress });
+      } else {
+        // Guest: send items + email in body
+        const guestItems = items.map((i) => ({
           productId: i.product.id,
           name: i.product.name,
           price: i.product.price,
           quantity: i.quantity,
-        })),
-        createdAt: new Date().toISOString(),
-      };
+        }));
+        order = await ordersApi.create({
+          shippingAddress,
+          guestEmail: shippingData.email,
+          items: guestItems,
+          total: subtotal,
+        });
+      }
 
-      setCompletedOrder(mockOrder);
+      setCompletedOrder(order);
       clearCart();
       setStep(4);
-    } catch {
-      // In a real app, handle error here
+      toast.success('Order placed successfully!');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to place order. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -96,6 +108,16 @@ export default function CheckoutPage() {
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
           Checkout
         </h1>
+
+        {!user && step < 4 && (
+          <p className="text-center text-sm text-muted-foreground mb-6">
+            Checking out as guest.{' '}
+            <Link href={`/login?redirect=/checkout`} className="text-primary hover:underline">
+              Sign in
+            </Link>{' '}
+            to save your order history.
+          </p>
+        )}
 
         <StepIndicator currentStep={step} />
 

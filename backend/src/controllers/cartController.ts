@@ -1,18 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { createError } from '../middlewares/errorHandler';
+import { AuthRequest } from '../middlewares/auth';
 
 // 24-hour cart expiration in milliseconds
 const CART_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
-// For this MVP, user_id is passed in headers/body as the API has no auth yet
-// In a real app this would come from the JWT token
-const getUserId = (req: Request): string => {
-  const header = req.headers['x-user-id'];
-  const userId = Array.isArray(header) ? header[0] : header;
-  if (!userId) throw createError('x-user-id header is required', 400);
-  return userId;
+const getUserId = (req: AuthRequest): string => {
+  if (!req.userId) throw createError('Authentication required', 401);
+  return req.userId;
 };
 
 const addCartItemSchema = z.object({
@@ -51,7 +48,7 @@ const expireCartItems = async (userId: string): Promise<void> => {
   }
 };
 
-export const addCartItem = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const addCartItem = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
     const body = addCartItemSchema.parse(req.body);
@@ -124,7 +121,7 @@ export const addCartItem = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getCartItems = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getCartItems = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
 
@@ -148,7 +145,7 @@ export const getCartItems = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const updateCartItem = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateCartItem = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
     const { id } = req.params;
@@ -194,7 +191,7 @@ export const updateCartItem = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-export const removeCartItem = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const removeCartItem = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
     const { id } = req.params;
