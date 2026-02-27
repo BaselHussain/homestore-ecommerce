@@ -7,12 +7,12 @@
 
 ## Summary
 
-Implement secure customer authentication using Better Auth with email/password signup/signin (JWT tokens) and protected routes for cart, checkout, wishlist and profile pages. Includes user profile dashboard with order history and address management, simulated payment flow with guest checkout option, and proper token storage with security measures. All components will use shadcn/ui for consistency with the existing design system.
+Implement secure customer authentication using custom JWT (bcryptjs + jsonwebtoken) with email/password signup/signin and protected routes for cart, checkout, wishlist and profile pages. Includes user profile dashboard with order history and address management, simulated payment flow with guest checkout option, and proper token storage with security measures. Implementation follows the `better-auth-jwt` skill (`.claude/skills/better-auth-jwt/SKILL.md`) for all code patterns.
 
 ## Technical Context
 
-**Language/Version**: TypeScript (frontend), JavaScript (backend), Node.js 20.x
-**Primary Dependencies**: Better Auth, Next.js 14+, React 18+, shadcn/ui, Tailwind CSS v4, @hookform/resolvers, zod
+**Language/Version**: TypeScript (frontend), TypeScript (backend), Node.js 20.x
+**Primary Dependencies**: bcryptjs, jsonwebtoken, express-rate-limit (backend auth); react-hook-form, zod v4, sonner (frontend); Next.js 16+, React 19+, Tailwind CSS v4
 **Storage**: Neon Serverless PostgreSQL (backend), localStorage (frontend client-side)
 **Testing**: Jest, React Testing Library (frontend), Supertest (backend)
 **Target Platform**: Web application (responsive, mobile-first)
@@ -90,14 +90,16 @@ frontend/
 
 backend/
 └── src/
-    ├── middleware/
-    │   └── auth.js               # Auth middleware for API routes
+    ├── lib/
+    │   └── security.ts           # JWT + bcrypt + password utilities
+    ├── middlewares/
+    │   └── auth.ts               # authenticate middleware (Bearer token)
     └── routes/
-        ├── auth.js               # Auth-related API routes
-        └── users.js              # User profile API routes
+        ├── auth.ts               # Auth API routes (signup, login, logout, reset)
+        └── users.ts              # User profile API routes
 ```
 
-**Structure Decision**: Web application with dedicated auth components in frontend and corresponding API endpoints in backend. This follows the spec requirements for Better Auth integration with protected routes and user profile functionality.
+**Structure Decision**: Web application with dedicated auth components in frontend and corresponding API endpoints in backend. Uses custom JWT (bcryptjs + jsonwebtoken) on the Express backend; all auth state managed client-side via AuthContext with localStorage/sessionStorage token storage.
 
 ## Complexity Tracking
 

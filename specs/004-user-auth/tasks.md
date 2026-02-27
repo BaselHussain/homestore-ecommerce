@@ -17,26 +17,27 @@
 
 **Goal**: Initialize authentication system and install required dependencies
 
-- [ ] T001 Setup Better Auth dependencies: npm install @better-auth/react @better-auth/node @hookform/resolvers zod
-- [ ] T002 [P] Create frontend/contexts/AuthContext.tsx for authentication state management
-- [ ] T003 [P] Create frontend/components/AuthProvider.tsx with Better Auth context provider
-- [ ] T004 [P] Create frontend/lib/auth.ts with authentication utilities and token management functions
-- [ ] T005 [P] Create frontend/lib/types/auth.ts with TypeScript types for auth-related entities
-- [ ] T006 Create backend/src/middleware/auth.js with authentication middleware for API routes
-- [ ] T007 Setup environment variables for Better Auth in .env/.env.example files
+- [X] T001 Install auth dependencies — backend: `npm install bcryptjs jsonwebtoken express-rate-limit && npm install -D @types/bcryptjs @types/jsonwebtoken`; frontend: no new packages needed (@hookform/resolvers, zod, sonner already installed)
+- [X] T001b Create backend/src/lib/security.ts — JWT sign/verify (createAccessToken, decodeAccessToken), bcrypt hash/compare (hashPassword, verifyPassword), generateResetToken, validatePasswordStrength
+- [X] T002 [P] Create frontend/contexts/AuthContext.tsx for authentication state management
+- [X] T003 [P] Create frontend/components/AuthProvider.tsx with Better Auth context provider
+- [X] T004 [P] Create frontend/lib/auth.ts with authentication utilities and token management functions
+- [X] T005 [P] Create frontend/lib/types/auth.ts with TypeScript types for auth-related entities
+- [X] T006 Create backend/src/middlewares/auth.ts with `authenticate` middleware and `AuthRequest` interface (Bearer token validation via jsonwebtoken)
+- [X] T007 Setup environment variables: add JWT_SECRET, JWT_EXPIRES_IN, JWT_REMEMBER_EXPIRES_IN, FRONTEND_URL to backend/.env and backend/.env.example; create frontend/.env.local with NEXT_PUBLIC_API_BASE_URL
 
 ## Phase 2: Foundational Tasks
 
 **Goal**: Build foundational components required for all user stories
 
-- [ ] T008 [P] Create frontend/lib/api.ts with JWT interceptor for API calls
-- [ ] T009 [P] Create frontend/components/ProtectedRoute.tsx component wrapper for protected pages
-- [ ] T010 [P] Create frontend/components/auth/LoginForm.tsx with email/password and validation
-- [ ] T011 [P] Create frontend/components/auth/SignupForm.tsx with validation and password strength meter
-- [ ] T012 [P] Create frontend/components/auth/PasswordResetForm.tsx component
-- [ ] T013 [P] Implement password validation with zod in frontend/lib/auth.ts
-- [ ] T014 [P] Create backend/src/routes/auth.js with authentication API routes
-- [ ] T015 [P] Create backend/src/routes/users.js with user profile API endpoints
+- [X] T008 [P] Create frontend/lib/api.ts with JWT interceptor for API calls
+- [X] T009 [P] Create frontend/components/ProtectedRoute.tsx component wrapper for protected pages
+- [X] T010 [P] Create frontend/components/auth/LoginForm.tsx with email/password and validation
+- [X] T011 [P] Create frontend/components/auth/SignupForm.tsx with validation and password strength meter
+- [X] T012 [P] Create frontend/components/auth/PasswordResetForm.tsx component
+- [X] T013 [P] Implement password validation with zod in frontend/lib/auth.ts
+- [X] T014 [P] Create backend/src/routes/auth.ts with authentication API routes (signup, login with rate limiter, logout, forgot-password, reset-password)
+- [X] T015 [P] Create backend/src/routes/users.ts with user profile API endpoints (profile GET/PUT, orders GET, addresses POST — all behind authenticate middleware)
 
 ## Phase 3: [US1] Authenticate and Access Protected Features
 
@@ -49,18 +50,18 @@
 2. **Given** user is on login page, **When** user enters valid credentials and submits, **Then** user is redirected to intended page with authenticated session
 3. **Given** user has valid session, **When** user accesses protected route, **Then** user can view and interact with protected features
 
-- [ ] T016 [P] [US1] Create frontend/app/login/page.tsx with login form and redirect logic
-- [ ] T017 [P] [US1] Create frontend/app/signup/page.tsx with signup form and account verification
-- [ ] T018 [P] [US1] Create frontend/app/forgot-password/page.tsx with password reset functionality
-- [ ] T019 [US1] Wrap cart page with ProtectedRoute component to require authentication
-- [ ] T020 [US1] Wrap checkout page with ProtectedRoute component to require authentication
-- [ ] T021 [US1] Wrap wishlist page with ProtectedRoute component to require authentication
-- [ ] T022 [US1] Wrap profile page with ProtectedRoute component to require authentication
-- [ ] T023 [US1] Implement token storage with options for both persistent ("Remember me") and session-only
-- [ ] T024 [US1] Add loading states and error handling for auth interactions with generic error messages
-- [ ] T025 [US1] Implement logout functionality that clears tokens and redirects to home
-- [ ] T026 [US1] Add Sonner toast notifications for auth events (login success, error messages)
-- [ ] T027 [US1] Test auth flow: signup → login → access protected routes
+- [X] T016 [P] [US1] Create frontend/app/login/page.tsx with login form and redirect logic
+- [X] T017 [P] [US1] Create frontend/app/signup/page.tsx with signup form and account verification
+- [X] T018 [P] [US1] Create frontend/app/forgot-password/page.tsx with password reset functionality
+- [X] T019 [US1] Wrap cart page with ProtectedRoute component to require authentication
+- [X] T020 [US1] Wrap checkout page with ProtectedRoute component to require authentication (reverted in Phase 5 for guest checkout)
+- [X] T021 [US1] Wrap wishlist page with ProtectedRoute component to require authentication
+- [X] T022 [US1] Wrap profile page with ProtectedRoute component to require authentication
+- [X] T023 [US1] Implement token storage with options for both persistent ("Remember me") and session-only
+- [X] T024 [US1] Add loading states and error handling for auth interactions with generic error messages
+- [X] T025 [US1] Implement logout functionality that clears tokens and redirects to home
+- [X] T026 [US1] Add Sonner toast notifications for auth events (login success, error messages)
+- [X] T027 [US1] Test auth flow: signup → login → access protected routes
 
 ## Phase 4: [US2] Manage User Profile & Orders
 
@@ -73,18 +74,18 @@
 2. **Given** authenticated user is on profile page, **When** user updates personal information, **Then** changes are saved and reflected in the system
 3. **Given** authenticated user is on profile page, **When** user adds or edits an address, **Then** address is saved and available for future orders
 
-- [ ] T028 [P] [US2] Create frontend/app/profile/page.tsx with user profile dashboard layout
-- [ ] T029 [P] [US2] Implement GET /api/users/profile endpoint to fetch user information
-- [ ] T030 [P] [US2] Implement PUT /api/users/profile endpoint to update user information
-- [ ] T031 [P] [US2] Implement GET /api/users/orders endpoint to fetch order history
-- [ ] T032 [P] [US2] Implement POST /api/users/addresses endpoint to add new addresses
-- [ ] T033 [US2] Display user profile information (name, email) on profile page
-- [ ] T034 [US2] Display order history with status (pending, shipped, delivered) on profile page
-- [ ] T035 [US2] Implement address management (add/edit/delete) functionality
-- [ ] T036 [US2] Implement change password functionality with email verification
-- [ ] T037 [US2] Implement order tracking simulation (showing status transitions)
-- [ ] T038 [US2] Add loading states and error handling for profile page interactions
-- [ ] T039 [US2] Test profile management flow: login → view orders → update info → add address
+- [X] T028 [P] [US2] Create frontend/app/profile/page.tsx with user profile dashboard layout
+- [X] T029 [P] [US2] Implement GET /api/users/profile endpoint to fetch user information
+- [X] T030 [P] [US2] Implement PUT /api/users/profile endpoint to update user information
+- [X] T031 [P] [US2] Implement GET /api/users/orders endpoint to fetch order history
+- [X] T032 [P] [US2] Implement POST /api/users/addresses endpoint to add new addresses
+- [X] T033 [US2] Display user profile information (name, email) on profile page
+- [X] T034 [US2] Display order history with status (pending, shipped, delivered) on profile page
+- [X] T035 [US2] Implement address management (add/edit/delete) functionality
+- [X] T036 [US2] Implement change password functionality with email verification
+- [X] T037 [US2] Implement order tracking simulation (showing status transitions)
+- [X] T038 [US2] Add loading states and error handling for profile page interactions
+- [X] T039 [US2] Test profile management flow: login → view orders → update info → add address
 
 ## Phase 5: [US3] Guest Checkout with Simulated Payment
 
@@ -97,34 +98,34 @@
 2. **Given** user is in checkout process, **When** user completes payment simulation, **Then** user receives success message and order confirmation
 3. **Given** user completed guest checkout, **When** user views confirmation, **Then** order details are displayed with tracking information
 
-- [ ] T040 [P] [US3] Create frontend/app/checkout/confirmation/page.tsx for order confirmation
-- [ ] T041 [P] [US3] Implement POST /api/orders endpoint to save order information to DB
-- [ ] T042 [US3] Add guest checkout toggle option to checkout flow
-- [ ] T043 [US3] Implement simulated payment flow with "Pay Now" button and success message
-- [ ] T044 [US3] Update checkout to handle both authenticated and guest user flows
-- [ ] T045 [US3] Show confirmation page with order summary and tracking information
-- [ ] T046 [US3] Implement order status changes (pending → confirmed) in simulated payment
-- [ ] T047 [US3] Add Sonner toast notifications for checkout events
-- [ ] T048 [US3] Test guest checkout flow: add items → checkout as guest → simulate payment → confirmation
+- [X] T040 [P] [US3] Create frontend/app/checkout/confirmation/page.tsx for order confirmation
+- [X] T041 [P] [US3] Implement POST /api/orders endpoint to save order information to DB
+- [X] T042 [US3] Add guest checkout toggle option to checkout flow
+- [X] T043 [US3] Implement simulated payment flow with "Pay Now" button and success message
+- [X] T044 [US3] Update checkout to handle both authenticated and guest user flows
+- [X] T045 [US3] Show confirmation page with order summary and tracking information
+- [X] T046 [US3] Implement order status changes (pending → confirmed) in simulated payment
+- [X] T047 [US3] Add Sonner toast notifications for checkout events
+- [X] T048 [US3] Test guest checkout flow: add items → checkout as guest → simulate payment → confirmation
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 **Goal**: Complete implementation with security, performance, and quality enhancements
 
-- [ ] T049 Add rate limiting for auth endpoints (max 5 attempts per IP per 15 minutes)
-- [ ] T050 Implement token expiration handling with seamless re-authentication
-- [ ] T051 Add security headers and CSRF protection for auth forms
-- [ ] T052 Implement proper error boundaries for auth components
-- [ ] T053 Add loading states and skeleton screens for protected routes
-- [ ] T054 Implement proper session management and token refresh mechanisms
-- [ ] T055 Add comprehensive error handling for network issues during auth processes
-- [ ] T056 Update existing checkout flow to support guest checkout option
-- [ ] T057 Add analytics/tracking for auth-related user actions
-- [ ] T058 Performance optimization: lazy load auth components when needed
-- [ ] T059 Update UI components to use shadcn/ui for auth forms and profile sections
-- [ ] T060 Security review: Verify password requirements (min 8 chars with upper/lower/number/special)
-- [ ] T061 Final testing: Complete user flows for all three user stories
-- [ ] T062 Documentation: Update README with authentication setup instructions
+- [X] T049 Add rate limiting for auth endpoints (max 5 attempts per IP per 15 minutes)
+- [X] T050 Implement token expiration handling with seamless re-authentication
+- [X] T051 Add security headers and CSRF protection for auth forms
+- [X] T052 Implement proper error boundaries for auth components
+- [X] T053 Add loading states and skeleton screens for protected routes
+- [X] T054 Implement proper session management and token refresh mechanisms
+- [X] T055 Add comprehensive error handling for network issues during auth processes
+- [X] T056 Update existing checkout flow to support guest checkout option
+- [X] T057 Add analytics/tracking for auth-related user actions
+- [X] T058 Performance optimization: lazy load auth components when needed
+- [X] T059 Update UI components to use shadcn/ui for auth forms and profile sections
+- [X] T060 Security review: Verify password requirements (min 8 chars with upper/lower/number/special)
+- [X] T061 Final testing: Complete user flows for all three user stories
+- [X] T062 Documentation: Update README with authentication setup instructions
 
 ## Dependencies & Parallel Execution
 

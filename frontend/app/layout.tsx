@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { DM_Serif_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "sonner";
 
 const dmSerifDisplay = DM_Serif_Display({
   variable: "--font-display",
@@ -32,10 +34,13 @@ export default function RootLayout({
       <body
         className={`${dmSerifDisplay.variable} ${plusJakartaSans.variable} antialiased overflow-x-hidden`}
       >
-        <CartProvider>
-          {children}
-          <Toaster />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            {children}
+            <Toaster />
+            <SonnerToaster position="top-right" richColors />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

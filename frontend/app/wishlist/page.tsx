@@ -9,8 +9,9 @@ import LightSheenButton from '@/components/ui/light-sheen-button';
 import { useWishlistStore } from '@/lib/wishlist-store';
 import { useCartStore } from '@/lib/cart-store';
 import { useToast } from '@/hooks/use-toast';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
-export default function WishlistPage() {
+function WishlistPageContent() {
   const items = useWishlistStore((s) => s.items);
   const removeFromWishlist = useWishlistStore((s) => s.removeItem);
   const addToCart = useCartStore((s) => s.addItem);
@@ -144,5 +145,13 @@ export default function WishlistPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function WishlistPage() {
+  return (
+    <ProtectedRoute>
+      <WishlistPageContent />
+    </ProtectedRoute>
   );
 }

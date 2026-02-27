@@ -8,8 +8,9 @@ import Footer from '@/components/Footer';
 import CartItemRow from '@/components/CartItemRow';
 import LightSheenButton from '@/components/ui/light-sheen-button';
 import { useCartStore } from '@/lib/cart-store';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
-export default function CartPage() {
+function CartPageContent() {
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
@@ -119,5 +120,13 @@ export default function CartPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function CartPage() {
+  return (
+    <ProtectedRoute>
+      <CartPageContent />
+    </ProtectedRoute>
   );
 }

@@ -1,11 +1,11 @@
 # Research: User Authentication & User Experience
 
-## Decision: Better Auth Implementation Strategy
-**Rationale**: Better Auth provides a complete authentication solution with email/password, JWT tokens, and verification flows that align with our requirements.
+## Decision: Custom JWT Implementation Strategy
+**Rationale**: Custom JWT (bcryptjs + jsonwebtoken + express-rate-limit) is the chosen approach. It provides full control over auth flow, is simpler to debug in a split Express/Next.js architecture, and the `better-auth-jwt` skill provides complete, production-ready code for this exact stack. Better Auth SDK was evaluated but rejected due to architecture mismatch with a separate Express backend.
 **Alternatives considered**:
-- NextAuth.js - More complex for current needs
-- Custom JWT implementation - Would require more security considerations
-- Auth0/Firebase - Overkill for this project's scope
+- Better Auth SDK - Designed for Next.js full-stack; requires proxy layer or experimental Express adapter when using a separate backend
+- NextAuth.js - More complex, primarily for Next.js full-stack
+- Auth0/Firebase - Overkill for this project's scope; adds external dependency
 
 ## Decision: Protected Route Implementation
 **Rationale**: Using a wrapper component approach provides flexibility and clear separation of concerns without complicating Next.js routing.

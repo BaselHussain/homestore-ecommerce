@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { addItemToWishlist, getWishlistItems, removeItemFromWishlist } from '../controllers/wishlistController';
+import { authenticate } from '../middlewares/auth';
 
 const router = Router();
+router.use(authenticate);
 
 // GET /api/wishlist - get user's wishlist
 router.get('/', getWishlistItems);

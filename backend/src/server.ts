@@ -1,15 +1,18 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import prisma from './lib/prisma';
 import productRoutes from './routes/products';
 import cartRoutes from './routes/cart';
 import wishlistRoutes from './routes/wishlist';
 import orderRoutes from './routes/orders';
+import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 
 // Validate required environment variables
-const requiredEnvVars = ['DATABASE_URL'];
+const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
 const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
 if (missingVars.length > 0) {
   console.error(`[FATAL] Missing required environment variables: ${missingVars.join(', ')}`);
@@ -21,7 +24,13 @@ const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 
 // Middleware
-app.use(cors());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow Next.js to fetch assets
+}));
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,6 +48,8 @@ app.get('/health', (_req, res) => {
 });
 
 // API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);

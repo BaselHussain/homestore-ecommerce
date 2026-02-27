@@ -5,10 +5,10 @@
 **Status**: Draft
 **Input**: User description: "Spec 4 - Authentication & User Experience
 
-Core goal: Implement secure customer authentication using Better Auth and enhance user experience with protected routes, user profile dashboard, and simulated payment flow.
+Core goal: Implement secure customer authentication using custom JWT (bcryptjs + jsonwebtoken) and enhance user experience with protected routes, user profile dashboard, and simulated payment flow.
 
 Key requirements:
-- Use Better Auth for email/password signup/signin (JWT tokens)
+- Use custom JWT auth (bcryptjs + jsonwebtoken) for email/password signup/signin (JWT tokens)
 - Secure protected routes (cart, checkout, wishlist, profile) — redirect to login if unauthenticated
 - User Profile Dashboard (/profile):
   - Show My Orders (list with status)
@@ -20,7 +20,7 @@ Key requirements:
   - Save order in DB (status: pending → confirmed)
   - Show confirmation page with order summary
 - Guest checkout option (no login required for checkout)
-- Use shadcn/ui for auth forms, profile cards, toasts
+- Use shadcn/ui-compatible Tailwind styling for auth forms, profile cards; use sonner for toasts
 - Handle token storage (localStorage), expiration, logout
 - Add loading states, error messages, success toasts
 
@@ -38,7 +38,7 @@ Success criteria:
 - Checkout with guest option works (simulated payment → confirmation)
 - Token handling secure and smooth
 
-Use Context7 MCP for Better Auth + Next.js protected routes examples if needed.
+Use the `better-auth-jwt` skill (`.claude/skills/better-auth-jwt/SKILL.md`) for complete implementation reference.
 
 Go."
 
@@ -104,7 +104,7 @@ A visitor wants to purchase items without creating an account. The user can add 
 
 ### Functional Requirements
 
-- **FR-001**: System MUST provide email and password authentication using Better Auth with strong password requirements (min 8 chars, upper, lower, number, special char), email verification required during signup, and password reset via email with time-limited secure links
+- **FR-001**: System MUST provide email and password authentication using custom JWT (bcryptjs + jsonwebtoken) with strong password requirements (min 8 chars, upper, lower, number, special char), simulated email verification during signup (MVP: auto-verify, log reset tokens to console), and password reset via time-limited DB tokens
 - **FR-002**: System MUST redirect unauthenticated users to login page when accessing protected routes (cart, checkout, wishlist, profile)
 - **FR-003**: System MUST securely store and manage JWT tokens in browser localStorage with options for both persistent ("Remember me") and session-only storage
 - **FR-004**: System MUST display user profile page with order history and account management options

@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, ShoppingBag, Heart, Menu, X, ChevronDown } from "lucide-react";
+import { Search, ShoppingBag, Heart, Menu, X, ChevronDown, User, LogOut } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlistStore } from "@/lib/wishlist-store";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import { categories, products } from "@/lib/products-mock";
 
 const Header = () => {
@@ -16,6 +18,13 @@ const Header = () => {
   const router = useRouter();
   const { totalItems } = useCart();
   const wishlistCount = useWishlistStore((state) => state.items.length);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('Signed out successfully');
+    router.push('/');
+  };
 
   const navLinks = [
     { label: "Home", path: "/" },
@@ -109,6 +118,34 @@ const Header = () => {
             >
               <Search className="w-5 h-5" />
             </button>
+
+            {/* Auth user menu */}
+            {isAuthenticated ? (
+              <div className="relative group hidden md:flex">
+                <button className="p-2 hover:text-primary transition-colors" aria-label="Account">
+                  <User className="w-5 h-5" />
+                </button>
+                <div className="absolute top-full right-0 w-48 mt-2 bg-card border border-border rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="p-3 border-b border-border">
+                    <p className="text-sm font-medium text-foreground truncate">{user?.name || user?.email}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                  </div>
+                  <div className="p-1">
+                    <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded-md hover:bg-accent transition-colors">
+                      <User className="w-4 h-4" /> My Profile
+                    </Link>
+                    <button onClick={handleLogout} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive rounded-md hover:bg-destructive/10 transition-colors">
+                      <LogOut className="w-4 h-4" /> Sign out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link href="/login" className="hidden md:flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary transition-colors p-2" aria-label="Sign in">
+                <User className="w-5 h-5" />
+              </Link>
+            )}
+
             <Link href="/wishlist" className="relative p-2 hover:text-primary transition-colors hidden md:flex" aria-label="Wishlist">
               <Heart className="w-5 h-5" />
               {wishlistCount > 0 && (

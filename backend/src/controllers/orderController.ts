@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { createError } from '../middlewares/errorHandler';
+import { AuthRequest } from '../middlewares/auth';
 
 type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Refunded';
 
@@ -16,11 +17,9 @@ const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   Refunded: [],
 };
 
-const getUserId = (req: Request): string => {
-  const header = req.headers['x-user-id'];
-  const userId = Array.isArray(header) ? header[0] : header;
-  if (!userId) throw createError('x-user-id header is required', 400);
-  return userId;
+const getUserId = (req: AuthRequest): string => {
+  if (!req.userId) throw createError('Authentication required', 401);
+  return req.userId;
 };
 
 const shippingAddressSchema = z.object({
@@ -31,59 +30,87 @@ const shippingAddressSchema = z.object({
   country: z.string().min(1, 'Country is required'),
 });
 
+const orderItemSchema = z.object({
+  productId: z.string().min(1),
+  name: z.string().min(1),
+  price: z.number().positive(),
+  quantity: z.number().int().positive(),
+});
+
 const createOrderSchema = z.object({
   shippingAddress: shippingAddressSchema,
+  guestEmail: z.string().email().optional(),
+  items: z.array(orderItemSchema).optional(),
+  total: z.number().positive().optional(),
 });
 
 const updateOrderStatusSchema = z.object({
   status: z.enum(['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Refunded']),
 });
 
-export const createOrder = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const createOrder = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = getUserId(req);
     const body = createOrderSchema.parse(req.body);
+    const userId = req.userId ?? null;
 
-    // Get cart items with product details
-    const cartItems = await prisma.cart.findMany({
-      where: { user_id: userId },
-      include: { product: true },
-    });
+    let orderItems: { productId: string; name: string; price: number; quantity: number }[];
+    let totalAmount: number;
 
-    if (cartItems.length === 0) {
-      next(createError('Cart is empty. Add items before placing an order.', 400));
-      return;
+    if (userId) {
+      // Authenticated: load items from DB cart
+      const cartItems = await prisma.cart.findMany({
+        where: { user_id: userId },
+        include: { product: true },
+      });
+
+      if (cartItems.length === 0) {
+        next(createError('Cart is empty. Add items before placing an order.', 400));
+        return;
+      }
+
+      orderItems = cartItems.map((item) => ({
+        productId: item.product_id,
+        name: item.product.name,
+        price: Number(item.product.price),
+        quantity: item.quantity,
+      }));
+      totalAmount = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    } else {
+      // Guest: items + guestEmail must be in body
+      if (!body.guestEmail) {
+        next(createError('Guest email is required for guest checkout', 400));
+        return;
+      }
+      if (!body.items || body.items.length === 0) {
+        next(createError('Order items are required for guest checkout', 400));
+        return;
+      }
+      orderItems = body.items;
+      totalAmount = body.total ?? orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     }
 
-    // Build order items snapshot and compute total
-    const orderItems = cartItems.map((item) => ({
-      productId: item.product_id,
-      name: item.product.name,
-      price: Number(item.product.price),
-      quantity: item.quantity,
-    }));
-
-    const totalAmount = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    // Create order and clear cart in a single transaction
+    // Create order and (for authenticated users) clear cart in a transaction
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
         data: {
           user_id: userId,
+          guest_email: userId ? null : body.guestEmail,
           total_amount: totalAmount,
-          status: 'Pending',
+          status: 'Confirmed', // simulate immediate payment confirmation
           shipping_address: body.shippingAddress,
           items: orderItems,
         },
       });
 
-      // Clear user's cart (stock was already decremented when items were added)
-      await tx.cart.deleteMany({ where: { user_id: userId } });
+      if (userId) {
+        await tx.cart.deleteMany({ where: { user_id: userId } });
+      }
 
       return newOrder;
     });
 
-    console.log(`[ORDERS] createOrder: order ${order.id} created for user ${userId}, total $${totalAmount.toFixed(2)}`);
+    const who = userId ? `user ${userId}` : `guest ${body.guestEmail}`;
+    console.log(`[ORDERS] createOrder: order ${order.id} created for ${who}, total $${totalAmount.toFixed(2)}`);
     res.status(201).json(order);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -94,7 +121,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
-export const getUserOrders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getUserOrders = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
 
@@ -110,7 +137,7 @@ export const getUserOrders = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-export const getOrderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getOrderById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
     const { id } = req.params;
@@ -128,7 +155,7 @@ export const getOrderById = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const updateOrderStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateOrderStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = getUserId(req);
     const { id } = req.params;
