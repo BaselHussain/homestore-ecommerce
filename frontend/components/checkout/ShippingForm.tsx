@@ -168,14 +168,14 @@ const ShippingForm = ({ defaultValues, onNext, onBack }: ShippingFormProps) => {
             <button
               type="button"
               onClick={onBack}
-              className="flex-1 py-3.5 rounded-full border border-border text-sm font-semibold text-foreground hover:bg-accent transition-colors"
+              className="flex-1 py-3.5 rounded-full border border-border text-sm font-semibold text-foreground transition-all duration-300 hover:bg-accent hover:shadow-md hover:shadow-primary/20 hover:scale-[1.02] cursor-pointer"
             >
               Back
             </button>
             <LightSheenButton
               type="submit"
               variant="primary"
-              className="flex-1 py-3.5 rounded-full font-semibold text-sm"
+              className="flex-1 py-3.5 rounded-full font-semibold text-sm cursor-pointer"
             >
               Continue to Payment
             </LightSheenButton>

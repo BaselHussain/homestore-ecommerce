@@ -11,6 +11,7 @@ import SearchBar from '@/components/SearchBar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { products as mockProducts, categories } from '@/lib/products-mock';
 import type { Product } from '@/lib/products-mock';
+import AnimatedElement from '@/components/ui/animated-element';
 
 const ProductSkeleton = () => (
   <div className="rounded-xl overflow-hidden border border-border bg-card">
@@ -33,27 +34,22 @@ function ProductsContent() {
   const [loading, setLoading] = useState(true);
 
   const loadProducts = useCallback(() => {
-    setLoading(true);
-    // Simulate async fetch — use mock data with filtering
-    const timer = setTimeout(() => {
-      let filtered = [...mockProducts];
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        filtered = filtered.filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.category.toLowerCase().includes(q)
-        );
-      }
-      if (categoryFilter) {
-        filtered = filtered.filter(
-          (p) => p.category.toLowerCase().replace(/\s+/g, '-') === categoryFilter
-        );
-      }
-      setProducts(filtered);
-      setLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
+    let filtered = [...mockProducts];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q)
+      );
+    }
+    if (categoryFilter) {
+      filtered = filtered.filter(
+        (p) => p.category.toLowerCase().replace(/\s+/g, '-') === categoryFilter
+      );
+    }
+    setProducts(filtered);
+    setLoading(false);
   }, [searchQuery, categoryFilter]);
 
   useEffect(() => {
@@ -82,9 +78,9 @@ function ProductsContent() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex-1 flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 lg:px-8 py-12">
+      <main className="flex-1 min-h-[60vh] container mx-auto px-4 lg:px-8 pt-12 pb-24">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-8">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
@@ -92,6 +88,7 @@ function ProductsContent() {
           <span className="text-foreground font-medium">Products</span>
         </nav>
 
+        <AnimatedElement animationType="fadeIn">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
             <span className="text-xs font-semibold tracking-widest uppercase text-primary">Catalogue</span>
@@ -108,12 +105,13 @@ function ProductsContent() {
             className="w-full md:w-72"
           />
         </div>
+        </AnimatedElement>
 
         {/* Category filters */}
         <div className="flex flex-wrap gap-2 mb-8">
           <button
             onClick={() => handleCategoryFilter('')}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
               !categoryFilter
                 ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
                 : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary hover:shadow-md hover:shadow-primary/20'
@@ -125,7 +123,7 @@ function ProductsContent() {
             <button
               key={cat.id}
               onClick={() => handleCategoryFilter(cat.slug)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
                 categoryFilter === cat.slug
                   ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
                   : 'bg-card border border-border text-foreground hover:border-primary hover:text-primary hover:shadow-md hover:shadow-primary/20'
@@ -177,7 +175,7 @@ export default function ProductsPage() {
     <Suspense fallback={
       <div className="min-h-screen">
         <Header />
-        <main className="container mx-auto px-4 lg:px-8 py-12">
+        <main className="container mx-auto px-4 lg:px-8 pt-12 pb-24">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 mt-24">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="rounded-xl overflow-hidden border border-border bg-card">

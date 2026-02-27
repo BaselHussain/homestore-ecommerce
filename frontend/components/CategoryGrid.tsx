@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { categories } from "@/lib/products-mock";
+import { categories, products } from "@/lib/products-mock";
 import AnimatedElement from "@/components/ui/animated-element";
 
 const CategoryGrid = () => (
@@ -20,23 +20,22 @@ const CategoryGrid = () => (
       </AnimatedElement>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
         {categories.map((cat, i) => (
           <AnimatedElement
             key={cat.id}
             animationType="fadeIn"
             delay={i * 0.1}
-            className="block"
+            className={`block${i === 0 ? " md:row-span-2" : ""}`}
           >
             <Link
               href={`/categories/${cat.slug}`}
-              className={`group relative overflow-hidden rounded-lg bg-secondary ${
-                i === 0 ? "md:row-span-2" : ""
-              }`}
+              className="group relative overflow-hidden rounded-lg bg-secondary"
               style={{
                 minHeight: i === 0 ? "400px" : "200px",
                 display: "flex",
-                flexDirection: "column"
+                flexDirection: "column",
+                height: "100%"
               }}
             >
               <div className="relative flex-grow">
@@ -44,13 +43,14 @@ const CategoryGrid = () => (
                   src={cat.image}
                   alt={cat.name}
                   fill
+                  sizes="(max-width: 640px) 50vw, 33vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
               </div>
               <div className="absolute bottom-0 left-0 p-5 z-10">
                 <h3 className="font-display text-lg font-bold text-card">{cat.name}</h3>
-                <p className="text-card/70 text-xs mt-0.5">{cat.productCount} products</p>
+                <p className="text-card/70 text-xs mt-0.5">{products.filter((p) => p.category === cat.name).length} products</p>
                 <span className="inline-block mt-2 text-xs font-semibold text-primary">Shop now</span>
               </div>
             </Link>

@@ -6,11 +6,10 @@ import { useRouter } from 'next/navigation';
 import { ChevronRight, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import StepIndicator from '@/components/checkout/StepIndicator';
 import CartReview from '@/components/checkout/CartReview';
 import ShippingForm, { type ShippingFormValues } from '@/components/checkout/ShippingForm';
-import PaymentForm from '@/components/checkout/PaymentForm';
+import PaymentForm, { type PaymentMethod } from '@/components/checkout/PaymentForm';
 import Confirmation from '@/components/checkout/Confirmation';
 import { useCartStore } from '@/lib/cart-store';
 import { ordersApi } from '@/lib/api';
@@ -29,6 +28,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [orderSubtotal, setOrderSubtotal] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
 
   // Redirect if cart is empty and not on confirmation step
   useEffect(() => {
@@ -42,12 +42,16 @@ export default function CheckoutPage() {
     setStep(3);
   };
 
-  const handlePay = async () => {
+  const handlePay = async (method: PaymentMethod) => {
     if (!shippingData) return;
     setIsProcessing(true);
     setOrderSubtotal(subtotal);
+    setPaymentMethod(method);
 
     try {
+      // Simulate processing delay (shorter for COD)
+      await new Promise((resolve) => setTimeout(resolve, method === 'cod' ? 600 : 1500));
+
       const shippingAddress = {
         street: shippingData.street,
         city: shippingData.city,
@@ -89,9 +93,9 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex-1 flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 lg:px-8 py-8">
+      <main className="flex-1 min-h-[60vh] container mx-auto px-4 lg:px-8 pt-8 pb-24">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-8">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
@@ -151,12 +155,12 @@ export default function CheckoutPage() {
               <Confirmation
                 order={completedOrder}
                 subtotal={orderSubtotal}
+                paymentMethod={paymentMethod}
               />
             )}
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }

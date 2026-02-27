@@ -37,7 +37,7 @@ const CartReview = ({ items, subtotal, onNext }: CartReviewProps) => {
               <div className="flex items-center justify-between mt-1">
                 <span className="text-xs text-muted-foreground">Qty: {quantity}</span>
                 <span className="text-sm font-bold text-foreground">
-                  ${(product.price * quantity).toFixed(2)}
+                  €{(product.price * quantity).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -48,15 +48,15 @@ const CartReview = ({ items, subtotal, onNext }: CartReviewProps) => {
       <div className="bg-card border border-border rounded-xl p-4 mb-6 space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Subtotal</span>
-          <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
+          <span className="font-medium text-foreground">€{subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Shipping</span>
-          <span className="font-medium text-foreground">{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+          <span className="font-medium text-foreground">{shipping === 0 ? 'Free' : `€${shipping.toFixed(2)}`}</span>
         </div>
         <div className="flex justify-between border-t border-border pt-2 mt-2">
           <span className="font-bold text-foreground">Total</span>
-          <span className="font-bold text-foreground text-base">${total.toFixed(2)}</span>
+          <span className="font-bold text-foreground text-base">€{total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -70,7 +70,7 @@ const CartReview = ({ items, subtotal, onNext }: CartReviewProps) => {
         <LightSheenButton
           onClick={onNext}
           variant="primary"
-          className="flex-1 py-3.5 rounded-full font-semibold text-sm"
+          className="flex-1 py-3.5 rounded-full font-semibold text-sm cursor-pointer"
         >
           Continue to Shipping
         </LightSheenButton>
