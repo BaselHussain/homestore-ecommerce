@@ -11,7 +11,7 @@ import CartReview from '@/components/checkout/CartReview';
 import ShippingForm, { type ShippingFormValues } from '@/components/checkout/ShippingForm';
 import PaymentForm, { type PaymentMethod } from '@/components/checkout/PaymentForm';
 import Confirmation from '@/components/checkout/Confirmation';
-import { useCartStore } from '@/lib/cart-store';
+import { useCart } from '@/contexts/CartContext';
 import { ordersApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Order } from '@/lib/types';
@@ -19,9 +19,7 @@ import type { Order } from '@/lib/types';
 export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const items = useCartStore((s) => s.items);
-  const clearCart = useCartStore((s) => s.clearCart);
-  const subtotal = useCartStore((s) => s.subtotal());
+  const { items, clearCart, totalPrice: subtotal, isLoading: cartLoading } = useCart();
 
   const [step, setStep] = useState(1);
   const [shippingData, setShippingData] = useState<ShippingFormValues | null>(null);
@@ -30,12 +28,12 @@ export default function CheckoutPage() {
   const [orderSubtotal, setOrderSubtotal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
 
-  // Redirect if cart is empty and not on confirmation step
+  // Redirect if cart is empty and not on confirmation step (wait for cart to load)
   useEffect(() => {
-    if (items.length === 0 && step < 4) {
+    if (!cartLoading && items.length === 0 && step < 4) {
       router.push('/cart');
     }
-  }, [items.length, step, router]);
+  }, [cartLoading, items.length, step, router]);
 
   const handleShippingSubmit = (data: ShippingFormValues) => {
     setShippingData(data);
@@ -122,7 +120,7 @@ export default function CheckoutPage() {
         <StepIndicator currentStep={step} />
 
         {/* Empty cart guard (before redirect kicks in) */}
-        {items.length === 0 && step < 4 ? (
+        {(cartLoading || items.length === 0) && step < 4 ? (
           <div className="text-center py-16">
             <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">Redirecting to cart...</p>

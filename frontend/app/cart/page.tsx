@@ -9,41 +9,41 @@ import Footer from '@/components/Footer';
 import CartItemRow from '@/components/CartItemRow';
 import ProductCard from '@/components/ProductCard';
 import LightSheenButton from '@/components/ui/light-sheen-button';
-import { useCartStore } from '@/lib/cart-store';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { products as allProducts } from '@/lib/products-mock';
+import { useCart } from '@/contexts/CartContext';
+import { productsApi } from '@/lib/api';
+import type { Product } from '@/lib/products-mock';
 import AnimatedElement from '@/components/ui/animated-element';
 
 function CartPageContent() {
   const router = useRouter();
-  const items = useCartStore((s) => s.items);
-  const updateQuantity = useCartStore((s) => s.updateQuantity);
-  const removeItem = useCartStore((s) => s.removeItem);
-  const clearCart = useCartStore((s) => s.clearCart);
-  const subtotal = useCartStore((s) => s.subtotal());
-  const cartCount = useCartStore((s) => s.cartCount());
+  const { items, updateQuantity, removeFromCart, clearCart, totalItems, totalPrice } = useCart();
+  const subtotal = totalPrice;
 
   const shipping = subtotal >= 50 ? 0 : 5;
   const total = subtotal + shipping;
 
-  const COUNTDOWN_START = 3 * 60 + 60; // 4:00 (3 mins + 60 secs)
+  const COUNTDOWN_START = 3 * 60 + 60;
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_START);
+  const [suggested, setSuggested] = useState<Product[]>([]);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setSecondsLeft((s) => (s <= 1 ? COUNTDOWN_START : s - 1));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Fetch suggested products (items not already in cart)
+  useEffect(() => {
+    productsApi.getAll({ limit: 12 }).then((data) => {
+      const cartProductIds = new Set(items.map((i) => i.product.id));
+      const notInCart = data.data.filter((p) => !cartProductIds.has(p.id));
+      setSuggested(notInCart.slice(0, 4));
+    }).catch(() => {});
+  }, [items]);
+
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
   const secs = String(secondsLeft % 60).padStart(2, '0');
-
-  const cartProductIds = new Set(items.map((i) => i.product.id));
-  const cartCategories = new Set(items.map((i) => i.product.category));
-  const notInCart = allProducts.filter((p) => !cartProductIds.has(p.id));
-  const suggested = [
-    ...notInCart.filter((p) => cartCategories.has(p.category)),
-    ...notInCart.filter((p) => !cartCategories.has(p.category)),
-  ].slice(0, 4);
 
   if (items.length === 0) {
     return (
@@ -52,7 +52,7 @@ function CartPageContent() {
         <main className="flex-1 container mx-auto px-4 lg:px-8 pt-20 pb-24 text-center">
           <ShoppingBag className="w-16 h-16 text-muted-foreground mx-auto mb-6" />
           <h1 className="font-display text-3xl font-bold text-foreground mb-3">Your Cart is Empty</h1>
-          <p className="text-muted-foreground mb-8">Looks like you haven't added anything yet.</p>
+          <p className="text-muted-foreground mb-8">Looks like you haven&apos;t added anything yet.</p>
           <Link
             href="/products"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-full font-semibold text-sm hover:opacity-90 transition-opacity"
@@ -85,7 +85,7 @@ function CartPageContent() {
         </Link>
 
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-          Shopping Cart ({cartCount})
+          Shopping Cart ({totalItems})
         </h1>
         <div className="flex justify-center mb-8 px-2">
           <div className="inline-flex flex-wrap items-center justify-center gap-1.5 md:gap-3 bg-orange-500/10 border border-orange-500/30 rounded-full px-3 py-2 md:px-5 md:py-2.5">
@@ -111,7 +111,7 @@ function CartPageContent() {
                 key={item.product.id}
                 item={item}
                 onUpdateQuantity={updateQuantity}
-                onRemove={removeItem}
+                onRemove={removeFromCart}
               />
             ))}
             <button
@@ -156,7 +156,7 @@ function CartPageContent() {
           </div>
         </div>
 
-        {/* People also buy */}
+        {/* People Also Buy */}
         {suggested.length > 0 && (
           <div className="mt-16">
             <AnimatedElement animationType="fadeIn">
@@ -186,9 +186,5 @@ function CartPageContent() {
 }
 
 export default function CartPage() {
-  return (
-    <ProtectedRoute>
-      <CartPageContent />
-    </ProtectedRoute>
-  );
+  return <CartPageContent />;
 }

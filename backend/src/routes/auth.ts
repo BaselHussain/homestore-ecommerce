@@ -54,8 +54,7 @@ router.post('/signup', async (req: Request, res: Response) => {
 
   const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   if (existing) {
-    // Return success to prevent email enumeration
-    res.status(201).json({ success: true, message: 'Account created. Please log in.' });
+    res.status(409).json({ success: false, error: 'An account with this email already exists. Please sign in instead.' });
     return;
   }
 

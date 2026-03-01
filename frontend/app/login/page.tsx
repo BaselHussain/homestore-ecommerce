@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { loginSchema, LoginValues } from '@/lib/validations/auth';
+import LightSheenButton from '@/components/ui/light-sheen-button';
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -106,14 +107,15 @@ function LoginForm() {
               </label>
             </div>
 
-            <button
+            <LightSheenButton
               type="submit"
+              variant="primary"
               disabled={isSubmitting}
-              className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isSubmitting ? 'Signing in...' : 'Sign in'}
-            </button>
+            </LightSheenButton>
           </form>
         </div>
       </div>

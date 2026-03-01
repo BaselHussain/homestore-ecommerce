@@ -4,11 +4,14 @@ export interface Product {
   price: number;
   originalPrice?: number;
   image: string;
+  images?: string[];
   category: string;
   badge?: "new" | "sale" | "out-of-stock";
   rating: number;
   reviews: number;
   itemCode: string;
+  description?: string;
+  stock?: number;
 }
 
 export interface Category {
