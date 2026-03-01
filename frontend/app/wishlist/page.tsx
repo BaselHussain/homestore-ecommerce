@@ -5,12 +5,12 @@ import { Heart, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { useWishlistStore } from '@/lib/wishlist-store';
+import { useWishlist } from '@/contexts/WishlistContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AnimatedElement from '@/components/ui/animated-element';
 
 function WishlistPageContent() {
-  const items = useWishlistStore((s) => s.items);
+  const { items } = useWishlist();
 
   if (items.length === 0) {
     return (

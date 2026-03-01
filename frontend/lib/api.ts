@@ -1,5 +1,6 @@
 import axios from "axios";
-import type { Product, CartItem, WishlistItem, Order, ShippingAddress, ProductListResponse } from "./types";
+import type { ShippingAddress, Order, ProductListResponse } from "./types";
+import type { Product } from "./products-mock";
 import { getToken, clearAuthData } from "./auth";
 
 const api = axios.create({
@@ -37,27 +38,58 @@ api.interceptors.response.use(
   }
 );
 
+// Maps a raw backend product to the frontend display Product type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mapProduct(raw: any): Product {
+  const images: string[] = Array.isArray(raw.images) ? raw.images : [];
+  const fallback = "/images/category-household.jpg";
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description,
+    price: parseFloat(raw.price),
+    originalPrice: raw.originalPrice != null ? parseFloat(raw.originalPrice) : undefined,
+    image: images[0] || fallback,
+    images,
+    category: raw.category,
+    badge: (raw.badge as Product["badge"]) || undefined,
+    rating: raw.rating != null ? parseFloat(raw.rating) : 0,
+    reviews: raw.reviews ?? 0,
+    itemCode: raw.itemCode ?? "",
+    stock: raw.stock,
+  };
+}
+
 // Products
 export const productsApi = {
   getAll: (params?: { search?: string; category?: string; sort?: string; page?: number; limit?: number }) =>
-    api.get<ProductListResponse>("/products", { params }).then((r) => r.data),
+    api.get<{ data: unknown[]; pagination: ProductListResponse["pagination"] }>("/products", { params }).then((r) => ({
+      data: r.data.data.map(mapProduct),
+      pagination: r.data.pagination,
+    } satisfies ProductListResponse)),
 
   getById: (id: string) =>
-    api.get<Product & { relatedProducts: Product[] }>(`/products/${id}`).then((r) => r.data),
+    api.get<unknown>(`/products/${id}`).then((r) => mapProduct(r.data)),
 };
 
 // Cart
 export const cartApi = {
-  get: () => api.get<{ items: CartItem[]; total: number }>("/cart").then((r) => r.data),
+  get: () => api.get<{ items: unknown[]; total: number }>("/cart").then((r) => r.data),
   add: (productId: string, quantity: number) =>
-    api.post<CartItem>("/cart", { productId, quantity }).then((r) => r.data),
+    api.post<unknown>("/cart", { productId, quantity }).then((r) => r.data),
+  update: (cartItemId: string, quantity: number) =>
+    api.put<unknown>(`/cart/${cartItemId}`, { quantity }).then((r) => r.data),
+  remove: (cartItemId: string) =>
+    api.delete<{ message: string }>(`/cart/${cartItemId}`).then((r) => r.data),
 };
 
 // Wishlist
 export const wishlistApi = {
-  get: () => api.get<{ items: WishlistItem[] }>("/wishlist").then((r) => r.data),
+  get: () => api.get<{ items: unknown[] }>("/wishlist").then((r) => r.data),
   add: (productId: string) =>
-    api.post<WishlistItem>("/wishlist", { productId }).then((r) => r.data),
+    api.post<unknown>("/wishlist", { productId }).then((r) => r.data),
+  remove: (wishlistItemId: string) =>
+    api.delete<{ message: string }>(`/wishlist/${wishlistItemId}`).then((r) => r.data),
 };
 
 // Orders
@@ -93,7 +125,7 @@ export const authApi = {
 // User profile
 export const userApi = {
   getProfile: () =>
-    api.get<{ success: boolean; user: { id: string; email: string; name: string; addresses: any[] } }>(
+    api.get<{ success: boolean; user: { id: string; email: string; name: string; addresses: unknown[] } }>(
       "/users/profile"
     ).then((r) => r.data),
 
@@ -108,10 +140,10 @@ export const userApi = {
     ).then((r) => r.data),
 
   getOrders: () =>
-    api.get<{ success: boolean; orders: any[] }>("/users/orders").then((r) => r.data),
+    api.get<{ success: boolean; orders: unknown[] }>("/users/orders").then((r) => r.data),
 
   addAddress: (data: { label?: string; street: string; city: string; state: string; zipCode: string; country?: string; isDefault?: boolean }) =>
-    api.post<{ success: boolean; address: any }>("/users/addresses", data).then((r) => r.data),
+    api.post<{ success: boolean; address: unknown }>("/users/addresses", data).then((r) => r.data),
 
   deleteAddress: (id: string) =>
     api.delete<{ success: boolean }>(`/users/addresses/${id}`).then((r) => r.data),

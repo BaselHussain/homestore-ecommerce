@@ -1,29 +1,26 @@
-'use client';
-
-import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Package } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { products, categories } from '@/lib/products-mock';
+import { categories } from '@/lib/products-mock';
+import { serverGetProducts } from '@/lib/server-api';
 import AnimatedElement from '@/components/ui/animated-element';
 
-const CategoryPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+export const revalidate = 300;
 
-  const category = useMemo(
-    () => categories.find((c) => c.slug === slug),
-    [slug]
-  );
+// Pre-generate all known category pages at build time
+export function generateStaticParams() {
+  return categories.map((cat) => ({ slug: cat.slug }));
+}
 
-  const categoryProducts = useMemo(
-    () => products.filter((p) => p.category.toLowerCase().replace(/\s+/g, '-') === slug),
-    [slug]
-  );
-
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const category = categories.find((c) => c.slug === slug);
   const displayName = category?.name ?? slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const categoryName = category?.name ?? displayName;
+
+  const products = await serverGetProducts({ category: categoryName, limit: 100 });
 
   return (
     <div className="flex-1 flex flex-col">
@@ -42,17 +39,15 @@ const CategoryPage = () => {
           <div className="mb-8">
             <span className="text-xs font-semibold tracking-widest uppercase text-primary">Category</span>
             <h1 className="font-display text-4xl font-bold text-foreground mt-1">{displayName}</h1>
-            {categoryProducts.length > 0 && (
-              <p className="text-muted-foreground mt-1 text-sm">
-                {categoryProducts.length} product{categoryProducts.length !== 1 ? 's' : ''} found
-              </p>
-            )}
+            <p className="text-muted-foreground mt-1 text-sm">
+              {products.length} product{products.length !== 1 ? 's' : ''} found
+            </p>
           </div>
         </AnimatedElement>
 
-        {categoryProducts.length > 0 ? (
+        {products.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
-            {categoryProducts.map((product, i) => (
+            {products.map((product, i) => (
               <AnimatedElement key={product.id} animationType="slideInUp" delay={(i % 4) * 0.07}>
                 <ProductCard product={product} />
               </AnimatedElement>
@@ -79,6 +74,4 @@ const CategoryPage = () => {
       <Footer />
     </div>
   );
-};
-
-export default CategoryPage;
+}

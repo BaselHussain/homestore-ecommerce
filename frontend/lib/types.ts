@@ -1,13 +1,6 @@
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  category: string;
-  images: string[];
-  createdAt: string;
-}
+// Re-export the canonical Product type from products-mock (display type)
+export type { Product } from './products-mock';
+import type { Product } from './products-mock';
 
 export interface CartItem {
   id: string;

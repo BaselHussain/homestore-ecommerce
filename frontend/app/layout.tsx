@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 
@@ -29,9 +30,11 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CartProvider>
-            {children}
-            <Toaster />
-            <SonnerToaster position="top-right" richColors />
+            <WishlistProvider>
+              {children}
+              <Toaster />
+              <SonnerToaster position="top-right" richColors />
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

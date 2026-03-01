@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, Loader2, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { signupSchema, SignupValues } from '@/lib/validations/auth';
+import LightSheenButton from '@/components/ui/light-sheen-button';
 
 const passwordRequirements = [
   { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
@@ -36,7 +37,15 @@ export default function SignupPage() {
       toast.success('Account created! Welcome to HomeStore.');
       router.push('/');
     } catch (err: any) {
-      toast.error(err.message || 'Signup failed. Please try again.');
+      const msg: string = err.message || 'Signup failed. Please try again.';
+      if (msg.toLowerCase().includes('already exists')) {
+        toast.error(msg, {
+          description: 'Head to the sign in page to access your account.',
+          action: { label: 'Sign in', onClick: () => router.push('/login') },
+        });
+      } else {
+        toast.error(msg);
+      }
     }
   };
 
@@ -131,14 +140,15 @@ export default function SignupPage() {
               {errors.confirmPassword && <p className="mt-1 text-xs text-destructive">{errors.confirmPassword.message}</p>}
             </div>
 
-            <button
+            <LightSheenButton
               type="submit"
+              variant="primary"
               disabled={isSubmitting}
-              className="w-full bg-primary text-primary-foreground py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {isSubmitting ? 'Creating account...' : 'Create account'}
-            </button>
+            </LightSheenButton>
           </form>
         </div>
       </div>

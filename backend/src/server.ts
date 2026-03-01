@@ -61,21 +61,30 @@ app.use(notFoundHandler);
 // Global error handler (must be last)
 app.use(errorHandler);
 
-// Start server
+// Start server — retries DB connect to handle Neon free-tier cold starts
 const startServer = async () => {
-  try {
-    // Validate database connection
-    await prisma.$connect();
-    console.log('[DB] Connected to Neon PostgreSQL');
+  const MAX_RETRIES = 5;
+  const RETRY_DELAY_MS = 4000;
 
-    app.listen(PORT, () => {
-      console.log(`[SERVER] Running on http://localhost:${PORT}`);
-      console.log(`[SERVER] Environment: ${process.env.NODE_ENV ?? 'development'}`);
-    });
-  } catch (error) {
-    console.error('[FATAL] Failed to connect to database:', error);
-    process.exit(1);
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await prisma.$connect();
+      console.log('[DB] Connected to Neon PostgreSQL');
+      break;
+    } catch (error) {
+      if (attempt === MAX_RETRIES) {
+        console.error('[FATAL] Failed to connect to database after retries:', error);
+        process.exit(1);
+      }
+      console.log(`[DB] Attempt ${attempt}/${MAX_RETRIES} failed — Neon may be waking up. Retrying in ${RETRY_DELAY_MS / 1000}s...`);
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+    }
   }
+
+  app.listen(PORT, () => {
+    console.log(`[SERVER] Running on http://localhost:${PORT}`);
+    console.log(`[SERVER] Environment: ${process.env.NODE_ENV ?? 'development'}`);
+  });
 };
 
 startServer();

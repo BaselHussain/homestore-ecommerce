@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { CartStoreItem } from '@/lib/cart-store';
+import type { CartItem } from '@/contexts/CartContext';
 import LightSheenButton from '@/components/ui/light-sheen-button';
 
 interface CartReviewProps {
-  items: CartStoreItem[];
+  items: CartItem[];
   subtotal: number;
   onNext: () => void;
 }

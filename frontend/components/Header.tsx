@@ -6,10 +6,10 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, ShoppingBag, Heart, Menu, X, ChevronDown, ChevronRight, Package, User, LogOut } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { useWishlistStore } from "@/lib/wishlist-store";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { categories, products } from "@/lib/products-mock";
+import { categories } from "@/lib/products-mock";
 
 const ANNOUNCEMENTS = [
   "Free Delivery on Orders Over €50 · New Arrivals Every Week",
@@ -29,7 +29,7 @@ const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems } = useCart();
-  const wishlistCount = useWishlistStore((state) => state.items.length);
+  const { count: wishlistCount } = useWishlist();
   const { user, isAuthenticated, logout } = useAuth();
 
   const handleLogout = async () => {
@@ -206,9 +206,6 @@ const Header = () => {
           {activeTab === "categories" && (
             <div className="space-y-2">
               {categories.map((category) => {
-                const categoryProducts = products
-                  .filter((p) => p.category === category.name)
-                  .slice(0, 3);
                 const isOpen = openCategory === category.id;
                 return (
                   <div key={category.id} className="border border-border rounded-lg overflow-hidden">
@@ -230,16 +227,13 @@ const Header = () => {
                     >
                       <div className="overflow-hidden">
                         <div className="px-3 pb-3 space-y-1.5">
-                          {categoryProducts.map((product) => (
-                            <Link
-                              key={product.id}
-                              href={`/products/${product.id}`}
-                              onClick={closeMobile}
-                              className="block text-xs text-muted-foreground hover:text-primary py-1 pl-2 border-l-2 border-border hover:border-primary transition-all"
-                            >
-                              {product.name}
-                            </Link>
-                          ))}
+                          <Link
+                            href={`/products?category=${category.slug}`}
+                            onClick={closeMobile}
+                            className="block text-xs text-muted-foreground hover:text-primary py-1 pl-2 border-l-2 border-border hover:border-primary transition-all"
+                          >
+                            Browse {category.name}
+                          </Link>
                           <Link
                             href={`/categories/${category.slug}`}
                             onClick={closeMobile}
@@ -424,37 +418,27 @@ const Header = () => {
               <div className="flex items-stretch">
                 {/* Left: Categories grid */}
                 <div className="flex-1 grid grid-cols-3 gap-x-8 gap-y-6 p-8">
-                  {categories.map((category) => {
-                    const catProducts = products
-                      .filter((p) => p.category === category.name)
-                      .slice(0, 5);
-                    return (
-                      <div key={category.id}>
-                        <Link
-                          href={`/categories/${category.slug}`}
-                          onClick={() => setMegaMenuOpen(false)}
-                          className="block font-semibold text-sm text-primary hover:underline mb-1"
-                        >
-                          {category.name}
-                        </Link>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          {products.filter((p) => p.category === category.name).length} products
-                        </p>
-                        <div className="space-y-1">
-                          {catProducts.map((product) => (
-                            <Link
-                              key={product.id}
-                              href={`/products/${product.id}`}
-                              onClick={() => setMegaMenuOpen(false)}
-                              className="block text-xs text-foreground hover:text-primary truncate"
-                            >
-                              {product.name}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {categories.map((category) => (
+                    <div key={category.id}>
+                      <Link
+                        href={`/categories/${category.slug}`}
+                        onClick={() => setMegaMenuOpen(false)}
+                        className="block font-semibold text-sm text-primary hover:underline mb-1"
+                      >
+                        {category.name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {category.productCount} products
+                      </p>
+                      <Link
+                        href={`/products?category=${category.slug}`}
+                        onClick={() => setMegaMenuOpen(false)}
+                        className="block text-xs text-foreground hover:text-primary truncate"
+                      >
+                        Browse {category.name} →
+                      </Link>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Right: Promo card */}

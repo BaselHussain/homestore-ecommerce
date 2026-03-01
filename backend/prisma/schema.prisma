@@ -29,14 +29,19 @@ model User {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int
-  category    String
-  images      Json
-  created_at  DateTime @default(now())
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  price         Decimal  @db.Decimal(10, 2)
+  originalPrice Decimal? @db.Decimal(10, 2)
+  stock         Int
+  category      String
+  badge         String?
+  rating        Decimal? @db.Decimal(3, 2)
+  reviews       Int?     @default(0)
+  itemCode      String?
+  images        Json
+  created_at    DateTime @default(now())
 
   cart_items     Cart[]
   wishlist_items Wishlist[]

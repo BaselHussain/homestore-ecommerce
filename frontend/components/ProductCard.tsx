@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/lib/products-mock";
 import { useCart } from "@/contexts/CartContext";
-import { useWishlistStore } from "@/lib/wishlist-store";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
 
 const badgeStyles = {
@@ -24,11 +24,8 @@ const ProductCard = ({ product, wishlistMode = false }: { product: Product; wish
   const isOutOfStock = product.badge === "out-of-stock";
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const addToWishlist = useWishlistStore((state) => state.addItem);
-  const removeFromWishlist = useWishlistStore((state) => state.removeItem);
-  const isInWishlist = useWishlistStore((state) =>
-    state.items.some((i) => i.product.id === product.id)
-  );
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist: checkWishlist } = useWishlist();
+  const isInWishlist = checkWishlist(product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

@@ -1,9 +1,15 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { Package, ShoppingBag, ChevronRight, CheckCircle, Circle, Truck, Clock, XCircle } from "lucide-react";
+import { Package, ShoppingBag, Truck, CheckCircle, Circle, Clock, XCircle, Loader2 } from "lucide-react";
 import LightSheenButton from "@/components/ui/light-sheen-button";
 import AnimatedElement from "@/components/ui/animated-element";
+import { userApi } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 type OrderStatus = "delivered" | "shipped" | "processing" | "pending" | "cancelled";
 
@@ -16,52 +22,6 @@ interface Order {
   itemCount: number;
   tracking?: string;
 }
-
-const orders: Order[] = [
-  {
-    id: "ORD-2024-001",
-    date: "Jan 15, 2026",
-    status: "delivered",
-    total: 124.99,
-    itemName: "Nordic Pine Shelf",
-    itemCount: 1,
-    tracking: "TRK-7823-4901",
-  },
-  {
-    id: "ORD-2024-002",
-    date: "Jan 28, 2026",
-    status: "shipped",
-    total: 89.50,
-    itemName: "Linen Cushion Set",
-    itemCount: 2,
-    tracking: "TRK-8812-3302",
-  },
-  {
-    id: "ORD-2024-003",
-    date: "Feb 3, 2026",
-    status: "processing",
-    total: 249.00,
-    itemName: "Outdoor Lounge Chair",
-    itemCount: 1,
-  },
-  {
-    id: "ORD-2024-004",
-    date: "Feb 10, 2026",
-    status: "pending",
-    total: 34.95,
-    itemName: "Scented Candle Bundle",
-    itemCount: 3,
-  },
-  {
-    id: "ORD-2024-005",
-    date: "Feb 18, 2026",
-    status: "delivered",
-    total: 167.30,
-    itemName: "Ceramic Vase Collection",
-    itemCount: 2,
-    tracking: "TRK-9934-1256",
-  },
-];
 
 const statusConfig: Record<OrderStatus, { label: string; bg: string; text: string; icon: React.ElementType }> = {
   delivered: {
@@ -108,6 +68,39 @@ const getStepIndex = (status: OrderStatus) => {
   }
 };
 
+function mapBackendStatus(raw: string): OrderStatus {
+  switch (raw.toLowerCase()) {
+    case "delivered": return "delivered";
+    case "shipped": return "shipped";
+    case "processing":
+    case "confirmed": return "processing";
+    case "cancelled":
+    case "refunded": return "cancelled";
+    default: return "pending";
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapBackendOrder(raw: any): Order {
+  const items: Array<{ name?: string; quantity?: number }> = Array.isArray(raw.items) ? raw.items : [];
+  const itemCount = items.reduce((sum, it) => sum + (it.quantity ?? 1), 0) || items.length || 1;
+  const itemName = items[0]?.name ?? "Order";
+
+  const date = raw.created_at
+    ? new Date(raw.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    : "";
+
+  return {
+    id: `ORD-${raw.id.slice(-8).toUpperCase()}`,
+    date,
+    status: mapBackendStatus(raw.status ?? ""),
+    total: parseFloat(raw.total_amount ?? 0),
+    itemName,
+    itemCount,
+    tracking: raw.tracking_number ?? undefined,
+  };
+}
+
 function OrderProgressBar({ status }: { status: OrderStatus }) {
   const currentStep = getStepIndex(status);
   if (currentStep === -1) return null;
@@ -115,7 +108,6 @@ function OrderProgressBar({ status }: { status: OrderStatus }) {
   return (
     <div className="mt-4 pt-4 border-t border-border">
       <div className="flex items-center justify-between relative">
-        {/* Connecting line */}
         <div className="absolute top-3 left-3 right-3 h-0.5 bg-border" />
         <div
           className="absolute top-3 left-3 h-0.5 bg-primary transition-all duration-500"
@@ -127,9 +119,7 @@ function OrderProgressBar({ status }: { status: OrderStatus }) {
             <div key={step} className="flex flex-col items-center gap-1.5 relative z-10">
               <div
                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                  filled
-                    ? "border-primary bg-primary"
-                    : "border-border bg-background"
+                  filled ? "border-primary bg-primary" : "border-border bg-background"
                 }`}
               >
                 {filled && <CheckCircle className="w-3.5 h-3.5 text-primary-foreground" />}
@@ -146,6 +136,27 @@ function OrderProgressBar({ status }: { status: OrderStatus }) {
 }
 
 export default function OrdersPage() {
+  const { user, isLoading: authLoading } = useAuth();
+  const router = useRouter();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.replace('/login?redirect=/orders');
+      return;
+    }
+    userApi.getOrders()
+      .then((data) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapped = (data.orders as any[]).map(mapBackendOrder);
+        setOrders(mapped);
+      })
+      .catch(() => setOrders([]))
+      .finally(() => setLoading(false));
+  }, [user, authLoading, router]);
+
   return (
     <div className="flex-1 flex flex-col">
       <Header />
@@ -168,7 +179,11 @@ export default function OrdersPage() {
         {/* Orders List */}
         <section className="py-16">
           <div className="container mx-auto px-4 lg:px-8 max-w-4xl">
-            {orders.length === 0 ? (
+            {loading || authLoading ? (
+              <div className="flex items-center justify-center py-24">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : orders.length === 0 ? (
               /* Empty State */
               <AnimatedElement animationType="fadeIn">
                 <div className="text-center py-24">
@@ -246,9 +261,7 @@ export default function OrdersPage() {
                         )}
 
                         {/* Progress tracker */}
-                        {showProgress && (
-                          <OrderProgressBar status={order.status} />
-                        )}
+                        {showProgress && <OrderProgressBar status={order.status} />}
                       </div>
                     </AnimatedElement>
                   );
@@ -257,20 +270,22 @@ export default function OrdersPage() {
             )}
 
             {/* Footer link */}
-            <AnimatedElement animationType="fadeIn" delay={0.2}>
-              <div className="mt-10 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Need help with an order?{" "}
-                  <Link href="/returns-exchanges" className="text-primary hover:underline font-medium">
-                    Returns & Exchanges
-                  </Link>
-                  {" "}or{" "}
-                  <Link href="/contact" className="text-primary hover:underline font-medium">
-                    Contact Support
-                  </Link>
-                </p>
-              </div>
-            </AnimatedElement>
+            {!loading && !authLoading && (
+              <AnimatedElement animationType="fadeIn" delay={0.2}>
+                <div className="mt-10 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Need help with an order?{" "}
+                    <Link href="/returns-exchanges" className="text-primary hover:underline font-medium">
+                      Returns & Exchanges
+                    </Link>
+                    {" "}or{" "}
+                    <Link href="/contact" className="text-primary hover:underline font-medium">
+                      Contact Support
+                    </Link>
+                  </p>
+                </div>
+              </AnimatedElement>
+            )}
           </div>
         </section>
       </main>

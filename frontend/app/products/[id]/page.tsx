@@ -10,11 +10,12 @@ import ProductCard from '@/components/ProductCard';
 import ProductImageZoom from '@/components/ProductImageZoom';
 import LightSheenButton from '@/components/ui/light-sheen-button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { products as mockProducts } from '@/lib/products-mock';
-import { useCartStore } from '@/lib/cart-store';
-import { useWishlistStore } from '@/lib/wishlist-store';
+import { productsApi } from '@/lib/api';
+import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { useToast } from '@/hooks/use-toast';
 import AnimatedElement from '@/components/ui/animated-element';
+import type { Product } from '@/lib/products-mock';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -22,46 +23,80 @@ interface PageProps {
 
 export default function ProductDetailPage({ params }: PageProps) {
   const { id } = use(params);
-  const product = mockProducts.find((p) => p.id === id);
+  const [product, setProduct] = useState<Product | null | undefined>(undefined); // undefined = loading
+  const [related, setRelated] = useState<Product[]>([]);
   const [qty, setQty] = useState(1);
   const [scope, animate] = useAnimate();
-  const addToCart = useCartStore((s) => s.addItem);
-  const addToWishlist = useWishlistStore((s) => s.addItem);
-  const removeFromWishlist = useWishlistStore((s) => s.removeItem);
-  const isInWishlist = useWishlistStore((s) => s.items.some((i) => i.product.id === id));
+  const { addToCart } = useCart();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist: checkWishlist } = useWishlist();
+  const isInWishlist = product ? checkWishlist(product.id) : false;
   const { toast } = useToast();
 
-  const isOutOfStock = product?.badge === 'out-of-stock';
+  const isOutOfStock = product?.badge === 'out-of-stock' || (product?.stock !== undefined && product.stock === 0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Shake animation: first shake after 2.5s, then every 3s
+  useEffect(() => {
+    productsApi.getById(id)
+      .then((p) => {
+        setProduct(p);
+        // Fetch related products from same category
+        productsApi.getAll({ category: p.category, limit: 5 })
+          .then((res) => {
+            setRelated(res.data.filter((rp) => rp.id !== id).slice(0, 4));
+          })
+          .catch(() => {});
+      })
+      .catch(() => setProduct(null));
+  }, [id]);
+
+  // Shake animation on Add to Cart button
   useEffect(() => {
     if (isOutOfStock || !scope.current) return;
-
     const shake = () => {
       if (scope.current) {
-        animate(scope.current, { x: [0, -8, 8, -8, 8, -4, 4, 0] }, { duration: 0.6, ease: "easeInOut" });
+        animate(scope.current, { x: [0, -8, 8, -8, 8, -4, 4, 0] }, { duration: 0.6, ease: 'easeInOut' });
       }
     };
-
     const timer = setTimeout(() => {
       shake();
       intervalRef.current = setInterval(shake, 3000);
     }, 2500);
-
     return () => {
       clearTimeout(timer);
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [isOutOfStock, animate, scope]);
 
+  // Loading state
+  if (product === undefined) {
+    return (
+      <div className="flex-1 flex flex-col">
+        <Header />
+        <main className="container mx-auto px-4 lg:px-8 pt-8 pb-24">
+          <div className="grid md:grid-cols-2 gap-10 lg:gap-16 mt-8">
+            <Skeleton className="aspect-square rounded-xl" />
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-1/4" />
+              <Skeleton className="h-10 w-3/4" />
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-8 w-1/4" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Not found
   if (!product) {
     return (
       <div className="flex-1 flex flex-col">
         <Header />
         <div className="container mx-auto px-4 lg:px-8 py-20 text-center">
           <h1 className="font-display text-3xl font-bold text-foreground mb-4">Product Not Found</h1>
-          <p className="text-muted-foreground mb-8">The product you're looking for doesn't exist.</p>
+          <p className="text-muted-foreground mb-8">The product you&apos;re looking for doesn&apos;t exist.</p>
           <Link
             href="/products"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-full font-semibold text-sm hover:opacity-90 transition-opacity"
@@ -74,10 +109,6 @@ export default function ProductDetailPage({ params }: PageProps) {
       </div>
     );
   }
-
-  const related = mockProducts
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
 
   const handleAddToCart = () => {
     addToCart(product, qty);
@@ -163,9 +194,8 @@ export default function ProductDetailPage({ params }: PageProps) {
             </div>
 
             <p className="text-muted-foreground leading-relaxed mb-6">
-              Premium quality product from our {product.category.toLowerCase()} collection.
-              Item code: {product.itemCode}. Built to last with excellent craftsmanship and materials.
-              Perfect for everyday use and makes a great gift.
+              {product.description ||
+                `Premium quality product from our ${product.category.toLowerCase()} collection. Item code: ${product.itemCode}. Built to last with excellent craftsmanship and materials.`}
             </p>
 
             {/* Stock status */}
@@ -233,10 +263,12 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             {/* Details */}
             <div className="border-t border-border pt-6 space-y-3 text-sm text-muted-foreground">
-              <div className="flex justify-between">
-                <span>Item Code</span>
-                <span className="font-medium text-foreground">{product.itemCode}</span>
-              </div>
+              {product.itemCode && (
+                <div className="flex justify-between">
+                  <span>Item Code</span>
+                  <span className="font-medium text-foreground">{product.itemCode}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Category</span>
                 <span className="font-medium text-foreground">{product.category}</span>
