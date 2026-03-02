@@ -100,6 +100,9 @@ export const ordersApi = {
     items?: Array<{ productId: string; name: string; price: number; quantity: number }>;
     total?: number;
   }) => api.post<Order>("/orders", data).then((r) => r.data),
+
+  track: (orderId: string, email: string) =>
+    api.get<{ success: boolean; order: unknown }>("/orders/track", { params: { orderId, email } }).then((r) => r.data),
 };
 
 // Auth

@@ -68,9 +68,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = useCallback((product: Product, quantity = 1) => {
     if (isAuthenticated) {
+      // Optimistic: update UI immediately
+      setBackendItems(prev => {
+        const existing = prev.find(i => i.product.id === product.id);
+        if (existing) {
+          return prev.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i);
+        }
+        return [...prev, { product, quantity }];
+      });
+      // Sync in background; refetch to get new item's DB id (needed for remove/update)
       cartApi.add(product.id, quantity)
         .then(() => fetchBackendCart())
-        .catch(() => {});
+        .catch(() => fetchBackendCart());
     } else {
       zustand.addItem(product, quantity);
     }
@@ -80,9 +89,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (isAuthenticated) {
       const cartItemId = cartItemIdMap.get(productId);
       if (cartItemId) {
+        // Optimistic: remove immediately
+        setBackendItems(prev => prev.filter(i => i.product.id !== productId));
         cartApi.remove(cartItemId)
-          .then(() => fetchBackendCart())
-          .catch(() => {});
+          .catch(() => fetchBackendCart()); // revert on failure
       }
     } else {
       zustand.removeItem(productId);
@@ -97,9 +107,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (isAuthenticated) {
       const cartItemId = cartItemIdMap.get(productId);
       if (cartItemId) {
+        // Optimistic: update immediately
+        setBackendItems(prev => prev.map(i => i.product.id === productId ? { ...i, quantity } : i));
         cartApi.update(cartItemId, quantity)
-          .then(() => fetchBackendCart())
-          .catch(() => {});
+          .catch(() => fetchBackendCart()); // revert on failure
       }
     } else {
       zustand.updateQuantity(productId, quantity);

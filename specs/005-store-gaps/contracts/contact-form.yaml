@@ -1,0 +1,71 @@
+openapi: 3.0.0
+info:
+  title: Contact Form API
+  description: API endpoint to submit contact form data
+  version: 1.0.0
+paths:
+  /api/contact:
+    post:
+      summary: Submit contact form
+      description: Submit contact form data to be stored for potential follow-up
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - message
+              properties:
+                name:
+                  type: string
+                  description: User's name
+                  example: "John Doe"
+                  minLength: 2
+                  maxLength: 100
+                email:
+                  type: string
+                  description: User's email address
+                  example: "john@example.com"
+                  format: email
+                message:
+                  type: string
+                  description: Message content
+                  example: "I have a question about your products..."
+                  minLength: 10
+                  maxLength: 1000
+      responses:
+        '200':
+          description: Contact form submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Thank you for contacting us. We'll get back to you soon."
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Validation failed"
+                  details:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string

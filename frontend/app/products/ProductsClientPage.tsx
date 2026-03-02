@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Package } from 'lucide-react';
+import { ChevronRight, Package, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -13,6 +13,7 @@ import { productsApi } from '@/lib/api';
 import { categories } from '@/lib/products-mock';
 import type { Product } from '@/lib/products-mock';
 import AnimatedElement from '@/components/ui/animated-element';
+import LightSheenButton from '@/components/ui/light-sheen-button';
 
 const ProductSkeleton = () => (
   <div className="rounded-xl overflow-hidden border border-border bg-card">
@@ -28,7 +29,10 @@ const ProductSkeleton = () => (
 function ProductsContent({ initialProducts }: { initialProducts: Product[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   const searchQuery = searchParams.get('search') || '';
+  const pageParam = parseInt(searchParams.get('page') || '1');
+  const limit = 12; // Show 12 products per page
 
   // If ISR server fetch returned nothing (backend unreachable at render time),
   // fall back to client-side fetch
@@ -68,25 +72,48 @@ function ProductsContent({ initialProducts }: { initialProducts: Product[] }) {
     return result;
   }, [allProducts, searchQuery, categoryName]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProducts.length / limit);
+  const currentPage = Math.max(1, Math.min(pageParam, totalPages || 1));
+  const startIndex = (currentPage - 1) * limit;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + limit);
+
   const handleSearch = (query: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (query) {
-      params.set('search', query);
-    } else {
-      params.delete('search');
-    }
-    router.push(`/products?${params.toString()}`);
+    // Preserve existing category filter; only reset page
+    const params = new URLSearchParams();
+    if (query) params.set('search', query);
+    if (categoryFilter) params.set('category', categoryFilter);
+    // Omit page param — page 1 is the default (keeps URL clean)
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleCategoryFilter = (slug: string) => {
+    // Clear search and reset page when switching category
+    const params = new URLSearchParams();
+    if (slug) params.set('category', slug);
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (slug) {
-      params.set('category', slug);
+    if (newPage === 1) {
+      params.delete('page');
     } else {
-      params.delete('category');
+      params.set('page', newPage.toString());
     }
-    params.delete('search');
-    router.push(`/products?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    }
   };
 
   return (
@@ -151,12 +178,79 @@ function ProductsContent({ initialProducts }: { initialProducts: Product[] }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
             {Array.from({ length: 8 }).map((_, i) => <ProductSkeleton key={i} />)}
           </div>
-        ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+        ) : paginatedProducts.length > 0 ? (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10">
+              {paginatedProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex flex-col items-center gap-4 mt-12">
+                <div className="flex items-center gap-2">
+                  <LightSheenButton
+                    variant="outline"
+                    onClick={handlePrevPage}
+                    disabled={currentPage <= 1}
+                    className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1">
+                      <ChevronLeft className="w-4 h-4" />
+                      Previous
+                    </span>
+                  </LightSheenButton>
+
+                  {/* Page Numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`w-10 h-10 rounded-full text-sm font-medium cursor-pointer ${
+                            currentPage === pageNum
+                              ? 'bg-primary text-primary-foreground'
+                              : 'border border-border text-foreground hover:bg-accent'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <LightSheenButton
+                    variant="outline"
+                    onClick={handleNextPage}
+                    disabled={currentPage >= totalPages}
+                    className="rounded-full border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1">
+                      Next
+                      <ChevronRightIcon className="w-4 h-4" />
+                    </span>
+                  </LightSheenButton>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </p>
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Package className="w-16 h-16 text-muted-foreground mb-6" />

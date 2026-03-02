@@ -120,6 +120,35 @@ router.get('/orders', async (req: AuthRequest, res: Response) => {
   });
 });
 
+// GET /api/users/orders/:id
+router.get('/orders/:id', async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+
+  const order = await prisma.order.findFirst({
+    where: { id, user_id: req.userId },
+  });
+
+  if (!order) {
+    res.status(404).json({ success: false, error: 'Order not found' });
+    return;
+  }
+
+  res.json({
+    success: true,
+    order: {
+      id: order.id,
+      status: order.status,
+      total: Number(order.total_amount),
+      currency: 'USD',
+      createdAt: order.created_at.toISOString(),
+      updatedAt: order.updated_at.toISOString(),
+      trackingNumber: order.tracking_number || null,
+      items: order.items,
+      shippingAddress: order.shipping_address,
+    },
+  });
+});
+
 // POST /api/users/addresses
 router.post('/addresses', async (req: AuthRequest, res: Response) => {
   const AddressSchema = z.object({
