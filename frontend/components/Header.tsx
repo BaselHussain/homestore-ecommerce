@@ -9,7 +9,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { categories } from "@/lib/products-mock";
+import { categories, products } from "@/lib/products-mock";
 
 const ANNOUNCEMENTS = [
   "Free Delivery on Orders Over €50 · New Arrivals Every Week",
@@ -207,6 +207,8 @@ const Header = () => {
             <div className="space-y-2">
               {categories.map((category) => {
                 const isOpen = openCategory === category.id;
+                const allInCategory = products.filter((p) => p.category === category.name);
+                const categoryProducts = allInCategory.slice(0, 4);
                 return (
                   <div key={category.id} className="border border-border rounded-lg overflow-hidden">
                     <button
@@ -226,20 +228,23 @@ const Header = () => {
                       }`}
                     >
                       <div className="overflow-hidden">
-                        <div className="px-3 pb-3 space-y-1.5">
+                        <div className="px-3 pb-3 space-y-1">
+                          {categoryProducts.map((p) => (
+                            <Link
+                              key={p.id}
+                              href={`/products/${p.id}`}
+                              onClick={closeMobile}
+                              className="block text-xs text-foreground hover:text-primary py-1 pl-2 border-l-2 border-border hover:border-primary transition-all"
+                            >
+                              {p.name}
+                            </Link>
+                          ))}
                           <Link
                             href={`/products?category=${category.slug}`}
                             onClick={closeMobile}
-                            className="block text-xs text-muted-foreground hover:text-primary py-1 pl-2 border-l-2 border-border hover:border-primary transition-all"
+                            className="block text-xs text-primary font-semibold pt-2 hover:underline"
                           >
-                            Browse {category.name}
-                          </Link>
-                          <Link
-                            href={`/categories/${category.slug}`}
-                            onClick={closeMobile}
-                            className="block text-xs text-primary font-semibold pt-1.5 hover:underline"
-                          >
-                            View all →
+                            See all {allInCategory.length} →
                           </Link>
                         </div>
                       </div>
@@ -253,16 +258,16 @@ const Header = () => {
           {activeTab === "account" && (
             <div className="space-y-2">
               <Link
-                href="/orders"
+                href="/track-order"
                 onClick={closeMobile}
                 className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${
-                  pathname === "/orders"
+                  pathname === "/track-order"
                     ? "text-primary bg-primary/10"
                     : "text-foreground hover:text-primary hover:bg-accent"
                 }`}
               >
                 <Package className="w-4 h-4" />
-                My Orders
+                Track Order
               </Link>
               <Link
                 href="/wishlist"
@@ -365,9 +370,9 @@ const Header = () => {
                 </Link>
               )}
               <Link
-                href="/orders"
+                href="/track-order"
                 className="relative p-2 hover:text-primary transition-colors hidden md:block"
-                aria-label="Orders"
+                aria-label="Track Order"
               >
                 <Package className="w-5 h-5" />
               </Link>
@@ -418,27 +423,44 @@ const Header = () => {
               <div className="flex items-stretch">
                 {/* Left: Categories grid */}
                 <div className="flex-1 grid grid-cols-3 gap-x-8 gap-y-6 p-8">
-                  {categories.map((category) => (
-                    <div key={category.id}>
-                      <Link
-                        href={`/categories/${category.slug}`}
-                        onClick={() => setMegaMenuOpen(false)}
-                        className="block font-semibold text-sm text-primary hover:underline mb-1"
-                      >
-                        {category.name}
-                      </Link>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        {category.productCount} products
-                      </p>
-                      <Link
-                        href={`/products?category=${category.slug}`}
-                        onClick={() => setMegaMenuOpen(false)}
-                        className="block text-xs text-foreground hover:text-primary truncate"
-                      >
-                        Browse {category.name} →
-                      </Link>
-                    </div>
-                  ))}
+                  {categories.map((category) => {
+                    const allInCategory = products.filter((p) => p.category === category.name);
+                    const categoryProducts = allInCategory.slice(0, 4);
+                    return (
+                      <div key={category.id}>
+                        <Link
+                          href={`/categories/${category.slug}`}
+                          onClick={() => setMegaMenuOpen(false)}
+                          className="block font-semibold text-sm text-primary hover:underline mb-2"
+                        >
+                          {category.name}
+                        </Link>
+                        <ul className="space-y-1.5 mb-2">
+                          {categoryProducts.map((p) => (
+                            <li key={p.id}>
+                              <Link
+                                href={`/products/${p.id}`}
+                                onClick={() => setMegaMenuOpen(false)}
+                                className="block text-xs text-foreground hover:text-primary truncate transition-colors"
+                              >
+                                {p.name}
+                              </Link>
+                            </li>
+                          ))}
+                          {categoryProducts.length === 0 && (
+                            <li className="text-xs text-muted-foreground">No products yet</li>
+                          )}
+                        </ul>
+                        <Link
+                          href={`/products?category=${category.slug}`}
+                          onClick={() => setMegaMenuOpen(false)}
+                          className="text-xs text-primary font-medium hover:underline"
+                        >
+                          See all {allInCategory.length} →
+                        </Link>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Right: Promo card */}

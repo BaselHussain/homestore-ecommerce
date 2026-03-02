@@ -9,6 +9,7 @@ import wishlistRoutes from './routes/wishlist';
 import orderRoutes from './routes/orders';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import contactRoutes from './routes/contact';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 
 // Validate required environment variables
@@ -54,6 +55,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/contact', contactRoutes);
 
 // 404 handler (must come after all routes)
 app.use(notFoundHandler);

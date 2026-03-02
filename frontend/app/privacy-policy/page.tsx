@@ -116,29 +116,34 @@ export default function PrivacyPolicy() {
         </section>
 
         {/* Contact CTA */}
-        <section className="py-12 bg-secondary">
-          <div className="container mx-auto px-4 lg:px-8 max-w-2xl">
+        <section className="py-16 bg-secondary">
+          <div className="container mx-auto px-4 lg:px-8 text-center max-w-xl">
             <AnimatedElement animationType="slideInUp">
-              <div className="bg-card border border-border rounded-xl p-8 text-center">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Mail className="w-6 h-6 text-primary" />
-                </div>
-                <h2 className="font-display text-2xl font-bold text-foreground mb-3">
-                  Questions about your privacy?
-                </h2>
-                <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-                  Contact our Data Protection team at{" "}
-                  <a href="mailto:info@homestore.com" className="text-primary hover:underline font-medium">
-                    info@homestore.com
-                  </a>
-                  {" "}or write to us at HomeStore, Zebbug, Malta.
-                </p>
+              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-7 h-7 text-primary" />
+              </div>
+              <h2 className="font-display text-3xl font-bold text-foreground mb-4">
+                Questions about your privacy?
+              </h2>
+              <p className="text-muted-foreground mb-8">
+                Contact our Data Protection team at{" "}
+                <a href="mailto:info@homestore.com" className="text-primary hover:underline font-medium">
+                  info@homestore.com
+                </a>
+                {" "}or write to us at HomeStore, Zebbug, Malta.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <a
+                  href="mailto:info@homestore.com"
+                  className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:opacity-90"
+                >
+                  Email Us
+                </a>
                 <Link
                   href="/contact"
-                  className="relative overflow-hidden inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/50 hover:scale-[1.02] before:content-[''] before:absolute before:top-0 before:left-[-100%] before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:transition-all before:duration-700 hover:before:left-[100%]"
+                  className="inline-flex items-center justify-center gap-2 border border-border text-foreground px-8 py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-accent"
                 >
-                  <Mail className="w-4 h-4" />
-                  Get in Touch
+                  Contact Page
                 </Link>
               </div>
             </AnimatedElement>
