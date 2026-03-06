@@ -10,6 +10,7 @@ import orderRoutes from './routes/orders';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import contactRoutes from './routes/contact';
+import adminRouter from './routes/adminRouter';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 
 // Validate required environment variables
@@ -29,7 +30,10 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow Next.js to fetch assets
 }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    process.env.ADMIN_URL || 'http://localhost:3001',
+  ],
   credentials: true,
 }));
 app.use(express.json());
@@ -56,6 +60,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/admin', adminRouter);
 
 // 404 handler (must come after all routes)
 app.use(notFoundHandler);

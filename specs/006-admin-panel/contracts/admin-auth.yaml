@@ -1,0 +1,101 @@
+openapi: 3.0.0
+info:
+  title: Admin Authentication API
+  description: Authentication endpoints specific to admin panel access
+  version: 1.0.0
+
+paths:
+  /admin/auth/check:
+    get:
+      summary: Check admin authentication
+      description: Verify if the current user has admin privileges
+      responses:
+        '200':
+          description: Admin authentication verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isAdmin:
+                    type: boolean
+                    example: true
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        type: string
+                        enum: [admin]
+        '401':
+          description: Not authenticated as admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isAdmin:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Not authenticated as admin"
+
+  /admin/session/refresh:
+    post:
+      summary: Refresh admin session
+      description: Extend admin session before timeout
+      responses:
+        '200':
+          description: Session refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Session refreshed"
+                  expiresAt:
+                    type: string
+                    format: date-time
+                    example: "2023-01-01T10:00:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    AdminSession:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        lastActivityAt:
+          type: string
+          format: date-time
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - User not authenticated or not admin
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unauthorized"
+              message:
+                type: string
+                example: "Admin access required"

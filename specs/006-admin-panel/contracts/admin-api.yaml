@@ -1,0 +1,794 @@
+openapi: 3.0.0
+info:
+  title: Admin API for Homestore E-commerce
+  description: API endpoints for admin panel functionality
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001/api
+    description: Development server
+  - url: https://yourdomain.com/api
+    description: Production server
+
+paths:
+  /admin/stats:
+    get:
+      summary: Get dashboard statistics
+      description: Retrieve summary statistics for the admin dashboard
+      responses:
+        '200':
+          description: Dashboard statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSales:
+                    type: object
+                    properties:
+                      today:
+                        type: number
+                        example: 1250.75
+                      week:
+                        type: number
+                        example: 8920.50
+                      month:
+                        type: number
+                        example: 35680.25
+                  totalOrders:
+                    type: object
+                    properties:
+                      pending:
+                        type: integer
+                        example: 15
+                      shipped:
+                        type: integer
+                        example: 32
+                      delivered:
+                        type: integer
+                        example: 128
+                      cancelled:
+                        type: integer
+                        example: 5
+                  totalUsers:
+                    type: integer
+                    example: 1245
+                  lowStockProducts:
+                    type: integer
+                    example: 8
+                  recentOrders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/products:
+    get:
+      summary: Get all products for admin
+      description: Retrieve paginated list of all products with admin details
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search term to filter products
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+      responses:
+        '200':
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Create a new product
+      description: Add a new product to the store via admin panel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '201':
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/products/{id}:
+    put:
+      summary: Update a product
+      description: Update an existing product via admin panel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Product ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '200':
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete a product
+      description: Remove a product from the store via admin panel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Product ID
+      responses:
+        '200':
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product deleted successfully"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin/orders:
+    get:
+      summary: Get all orders for admin
+      description: Retrieve paginated list of all orders for admin management
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: Filter by order status
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by email or order ID
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/orders/{id}/status:
+    put:
+      summary: Update order status
+      description: Update the status of an order via admin panel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, shipped, delivered, cancelled]
+                  description: New status for the order
+                reason:
+                  type: string
+                  description: Optional reason for status change
+      responses:
+        '200':
+          description: Order status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin/users:
+    get:
+      summary: Get all users for admin
+      description: Retrieve paginated list of all users for admin management
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by email
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/users/{id}/ban:
+    put:
+      summary: Ban or unban a user
+      description: Toggle ban status for a user via admin panel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isBanned:
+                  type: boolean
+                  description: Whether to ban (true) or unban (false) the user
+      responses:
+        '200':
+          description: User ban status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /admin/analytics:
+    get:
+      summary: Get analytics data
+      description: Retrieve data for admin analytics charts
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [daily, weekly, monthly, yearly]
+            default: monthly
+          description: Time period for analytics
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date for analytics period
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date for analytics period
+      responses:
+        '200':
+          description: Analytics data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  salesData:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        value:
+                          type: number
+                  topProducts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          type: string
+                        productName:
+                          type: string
+                        sales:
+                          type: number
+                  orderStatusData:
+                    type: object
+                    properties:
+                      pending:
+                        type: integer
+                      shipped:
+                        type: integer
+                      delivered:
+                        type: integer
+                      cancelled:
+                        type: integer
+                  userGrowthData:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        newUsers:
+                          type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/invoices:
+    get:
+      summary: Get invoices
+      description: Retrieve paginated list of invoices
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of items per page
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [daily, weekly, monthly]
+          description: Filter by period (daily, weekly, monthly)
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date for invoice period
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date for invoice period
+      responses:
+        '200':
+          description: Invoices retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/invoices/generate:
+    post:
+      summary: Generate a new invoice
+      description: Generate a new invoice for a specific date range
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                period:
+                  type: string
+                  enum: [daily, weekly, monthly]
+                  description: Invoice period
+                startDate:
+                  type: string
+                  format: date
+                  description: Start date for invoice period
+                endDate:
+                  type: string
+                  format: date
+                  description: End date for invoice period
+                taxAmount:
+                  type: number
+                  description: Manual tax amount to include
+      responses:
+        '201':
+          description: Invoice generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        category:
+          type: string
+        image:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        variants:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+        updatedBy:
+          type: string
+
+    ProductInput:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Premium Headphones"
+        description:
+          type: string
+          example: "High-quality wireless headphones with noise cancellation"
+        price:
+          type: number
+          example: 199.99
+        stock:
+          type: integer
+          example: 50
+        category:
+          type: string
+          example: "electronics"
+        image:
+          type: string
+          example: "https://example.com/headphones.jpg"
+        images:
+          type: array
+          items:
+            type: string
+          example: ["https://example.com/headphones1.jpg", "https://example.com/headphones2.jpg"]
+        variants:
+          type: object
+          example: {"color": ["black", "white"], "size": "standard"}
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: string
+              name:
+                type: string
+              price:
+                type: number
+              quantity:
+                type: integer
+        total:
+          type: number
+        status:
+          type: string
+          enum: [pending, shipped, delivered, cancelled]
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddress'
+        paymentStatus:
+          type: string
+          enum: [pending, paid, failed]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        isBanned:
+          type: boolean
+        joinDate:
+          type: string
+          format: date-time
+        totalOrders:
+          type: number
+        orderHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+
+    ShippingAddress:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        country:
+          type: string
+
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+        invoiceNumber:
+          type: string
+        dateRange:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+        generatedAt:
+          type: string
+          format: date-time
+        generatedBy:
+          type: string
+        totalRevenue:
+          type: number
+        orderCount:
+          type: number
+        taxAmount:
+          type: number
+        topProducts:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: string
+              quantity:
+                type: number
+              revenue:
+                type: number
+        orders:
+          type: array
+          items:
+            type: object
+            properties:
+              orderId:
+                type: string
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    price:
+                      type: number
+                    quantity:
+                      type: integer
+              total:
+                type: number
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    # Common responses
+    Unauthorized:
+      description: Unauthorized - User not authenticated or not admin
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Unauthorized"
+              message:
+                type: string
+                example: "Admin access required"
+    Forbidden:
+      description: Forbidden - User authenticated but not authorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Forbidden"
+              message:
+                type: string
+                example: "Access denied for non-admin users"
+    BadRequest:
+      description: Bad request - Invalid input data
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Bad Request"
+              message:
+                type: string
+                example: "Invalid input data"
+    NotFound:
+      description: Not found - Requested resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Not Found"
+              message:
+                type: string
+                example: "Resource not found"
