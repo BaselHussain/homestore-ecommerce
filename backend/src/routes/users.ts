@@ -141,7 +141,6 @@ router.get('/orders/:id', async (req: AuthRequest, res: Response) => {
       total: Number(order.total_amount),
       currency: 'USD',
       createdAt: order.created_at.toISOString(),
-      updatedAt: order.updated_at.toISOString(),
       trackingNumber: order.tracking_number || null,
       items: order.items,
       shippingAddress: order.shipping_address,

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { decodeAccessToken } from '../lib/security';
+import prisma from '../lib/prisma';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -19,7 +20,7 @@ export const optionalAuthenticate = (req: AuthRequest, _res: Response, next: Nex
   next();
 };
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -42,5 +43,13 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
   req.userId = payload.sub;
   req.userEmail = payload.email;
+
+  // Check if user is banned
+  const user = await prisma.user.findUnique({ where: { id: payload.sub }, select: { isBanned: true } });
+  if (user?.isBanned) {
+    res.status(403).json({ success: false, error: 'Account suspended' });
+    return;
+  }
+
   next();
 };

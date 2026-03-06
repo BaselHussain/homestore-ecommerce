@@ -93,12 +93,18 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
 
   await prisma.user.update({ where: { id: user.id }, data: { last_login_at: new Date() } });
 
+  // Block banned users from logging in
+  if (user.isBanned) {
+    res.status(403).json({ success: false, error: 'Your account has been suspended. Please contact support.' });
+    return;
+  }
+
   const token = createAccessToken(user.id, user.email, rememberMe);
 
   res.json({
     success: true,
     token,
-    user: { id: user.id, email: user.email, name: user.name },
+    user: { id: user.id, email: user.email, name: user.name, role: user.role },
   });
 });
 
@@ -106,6 +112,23 @@ router.post('/login', authLimiter, async (req: Request, res: Response) => {
 router.post('/logout', authenticate, (_req: AuthRequest, res: Response) => {
   // JWT is stateless — client discards the token
   res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// GET /api/auth/me (authenticated) — returns current user with role
+router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.userId },
+    select: { id: true, email: true, name: true, role: true, isBanned: true },
+  });
+  if (!user) {
+    res.status(404).json({ success: false, error: 'User not found' });
+    return;
+  }
+  if (user.isBanned) {
+    res.status(403).json({ success: false, error: 'Account suspended' });
+    return;
+  }
+  res.json({ success: true, user });
 });
 
 // POST /api/auth/forgot-password
