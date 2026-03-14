@@ -2,6 +2,7 @@ import axios from "axios";
 import type { ShippingAddress, Order, ProductListResponse } from "./types";
 import type { Product } from "./products-mock";
 import { getToken, clearAuthData } from "./auth";
+import { getImageUrl } from "./utils";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api",
@@ -49,8 +50,8 @@ export function mapProduct(raw: any): Product {
     description: raw.description,
     price: parseFloat(raw.price),
     originalPrice: raw.originalPrice != null ? parseFloat(raw.originalPrice) : undefined,
-    image: images[0] || fallback,
-    images,
+    image: getImageUrl(images[0] || fallback),
+    images: images.map(getImageUrl),
     category: raw.category,
     badge: (raw.badge as Product["badge"]) || undefined,
     rating: raw.rating != null ? parseFloat(raw.rating) : 0,
@@ -72,25 +73,6 @@ export const productsApi = {
     api.get<unknown>(`/products/${id}`).then((r) => mapProduct(r.data)),
 };
 
-// Cart
-export const cartApi = {
-  get: () => api.get<{ items: unknown[]; total: number }>("/cart").then((r) => r.data),
-  add: (productId: string, quantity: number) =>
-    api.post<unknown>("/cart", { productId, quantity }).then((r) => r.data),
-  update: (cartItemId: string, quantity: number) =>
-    api.put<unknown>(`/cart/${cartItemId}`, { quantity }).then((r) => r.data),
-  remove: (cartItemId: string) =>
-    api.delete<{ message: string }>(`/cart/${cartItemId}`).then((r) => r.data),
-};
-
-// Wishlist
-export const wishlistApi = {
-  get: () => api.get<{ items: unknown[] }>("/wishlist").then((r) => r.data),
-  add: (productId: string) =>
-    api.post<unknown>("/wishlist", { productId }).then((r) => r.data),
-  remove: (wishlistItemId: string) =>
-    api.delete<{ message: string }>(`/wishlist/${wishlistItemId}`).then((r) => r.data),
-};
 
 // Orders
 export const ordersApi = {

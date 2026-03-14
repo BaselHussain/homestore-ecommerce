@@ -4,14 +4,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import prisma from './lib/prisma';
 import productRoutes from './routes/products';
-import cartRoutes from './routes/cart';
-import wishlistRoutes from './routes/wishlist';
 import orderRoutes from './routes/orders';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import contactRoutes from './routes/contact';
 import adminRouter from './routes/adminRouter';
+import uploadsRouter from './routes/uploadsRouter';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
+import path from 'path';
 
 // Validate required environment variables
 const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
@@ -39,6 +39,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded images as static files
+app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+
 // Request logging in development
 if (process.env.NODE_ENV === 'development') {
   app.use((req, _res, next) => {
@@ -56,11 +59,10 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRouter);
+app.use('/api/admin/uploads', uploadsRouter);
 
 // 404 handler (must come after all routes)
 app.use(notFoundHandler);
@@ -95,3 +97,11 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Prevent transient Neon connection drops from crashing the server
+process.on('unhandledRejection', (reason) => {
+  console.error('[UNHANDLED REJECTION] — server kept alive:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION] — server kept alive:', err.message);
+});

@@ -55,6 +55,16 @@ export const adminApi = {
   // Invoices
   getInvoices: (params?: Record<string, string | number | undefined>) => api.get('/admin/invoices', { params }).then(r => r.data),
   generateInvoice: (data: unknown) => api.post('/admin/invoices/generate', data).then(r => r.data),
+
+  // Bulk import
+  bulkImportProducts: (products: unknown[]) => api.post('/admin/products/bulk', { products }).then(r => r.data),
+
+  // Image uploads
+  getUploads: () => api.get('/admin/uploads').then(r => r.data),
+  uploadImages: (formData: FormData) => api.post('/admin/uploads', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data),
+  deleteUpload: (filename: string) => api.delete(`/admin/uploads/${btoa(filename)}`).then(r => r.data),
 };
 
 export default api;
