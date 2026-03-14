@@ -9,7 +9,8 @@
       "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-phr.sh --title \"create-user-authentication-spec\" --stage spec --feature 004-user-auth --json 2>&1)",
       "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/check-prerequisites.sh --json --paths-only)",
       "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-phr.sh --title \"clarify-authentication-requirements\" --stage spec --feature 004-user-auth --json 2>&1)",
-      "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-phr.sh --title \"additional-auth-clarifications\" --stage spec --feature 004-user-auth --json 2>&1)"
+      "Bash(cd \"E:/e-commerce claude\" && .specify/scripts/bash/create-phr.sh --title \"additional-auth-clarifications\" --stage spec --feature 004-user-auth --json 2>&1)",
+      "Bash(cd \"E:\\\\e-commerce claude\\\\admin\" && npm install papaparse && npm install -D @types/papaparse 2>&1 | tail -5)"
     ]
   }
 }

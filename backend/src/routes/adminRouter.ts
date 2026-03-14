@@ -19,6 +19,10 @@ import { Request, Response } from 'express';
 import { AdminRequest } from '../middlewares/adminOnly';
 import prisma from '../lib/prisma';
 
+function normalizeImageUrl(url: string): string {
+  return url; // keep full URLs (Cloudinary https://... must not be stripped)
+}
+
 // GET /api/admin/stats
 router.get('/stats', async (_req: Request, res: Response) => {
   const now = new Date();
@@ -103,7 +107,7 @@ router.get('/products', async (req: Request, res: Response) => {
 router.post('/products', async (req: Request, res: Response) => {
   const { name, description, price, originalPrice, stock, category, badge, images, itemCode } = req.body;
   const product = await prisma.product.create({
-    data: { name, description, price, originalPrice, stock, category, badge, images: images ?? [], itemCode },
+    data: { name, description, price, originalPrice, stock, category, badge, images: (images ?? []).map(normalizeImageUrl), itemCode },
   });
   res.status(201).json({ success: true, product });
 });
@@ -114,9 +118,31 @@ router.put('/products/:id', async (req: Request, res: Response) => {
   const { name, description, price, originalPrice, stock, category, badge, images, itemCode } = req.body;
   const product = await prisma.product.update({
     where: { id },
-    data: { name, description, price, originalPrice, stock, category, badge, images, itemCode },
+    data: { name, description, price, originalPrice, stock, category, badge, images: (images ?? []).map(normalizeImageUrl), itemCode },
   });
   res.json({ success: true, product });
+});
+
+// POST /api/admin/products/bulk
+router.post('/products/bulk', async (req: Request, res: Response) => {
+  const { products } = req.body;
+  if (!Array.isArray(products) || products.length === 0) {
+    res.status(400).json({ success: false, error: 'No products provided' }); return;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = products.map((p: any) => ({
+    name: String(p.name),
+    description: String(p.description || ''),
+    price: parseFloat(p.price),
+    originalPrice: p.originalPrice ? parseFloat(p.originalPrice) : null,
+    stock: parseInt(p.stock) || 0,
+    category: String(p.category),
+    badge: p.badge || null,
+    itemCode: p.itemCode || null,
+    images: String(p.images || '').split('|').map(normalizeImageUrl).filter(Boolean),
+  }));
+  const result = await prisma.product.createMany({ data, skipDuplicates: true });
+  res.json({ success: true, created: result.count });
 });
 
 // DELETE /api/admin/products/:id

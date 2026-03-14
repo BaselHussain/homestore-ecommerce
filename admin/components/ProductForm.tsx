@@ -26,9 +26,9 @@ interface Props {
   onSaved: () => void;
 }
 
-const CATEGORIES = ['living-room', 'bedroom', 'kitchen', 'bathroom', 'office', 'outdoor', 'lighting', 'storage', 'decor', 'other'];
+const CATEGORIES = ['Household Goods', 'Gifts', 'Toys', 'Malta Souvenirs', 'Outdoor Furniture', 'Home Decor'];
 
-const emptyForm: Product = { name: '', description: '', price: 0, stock: 0, category: 'living-room', images: [''] };
+const emptyForm: Product = { name: '', description: '', price: 0, stock: 0, category: 'Household Goods', images: [''] };
 
 export default function ProductForm({ product, onClose, onSaved }: Props) {
   const [form, setForm] = useState<Product>(product ? { ...product, images: (product.images as string[]).length ? product.images as string[] : [''] } : emptyForm);

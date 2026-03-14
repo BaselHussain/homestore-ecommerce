@@ -9,7 +9,8 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { categories, products } from "@/lib/products-mock";
+import { categories } from "@/lib/products-mock";
+import type { Product } from "@/lib/products-mock";
 
 const ANNOUNCEMENTS = [
   "Free Delivery on Orders Over €50 · New Arrivals Every Week",
@@ -31,6 +32,21 @@ const Header = () => {
   const { totalItems } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { user, isAuthenticated, logout } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5000/api';
+    fetch(`${base}/products?limit=100`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.data) setProducts(data.data.map((p: any) => ({
+          id: p.id, name: p.name, price: parseFloat(p.price),
+          image: Array.isArray(p.images) && p.images[0] ? p.images[0] : '/images/category-household.jpg',
+          category: p.category, rating: 0, reviews: 0, itemCode: p.itemCode ?? '',
+        })));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     await logout();

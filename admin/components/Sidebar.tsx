@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import {
   LayoutDashboard, Package, ShoppingCart, Users, BarChart3,
-  FileText, ChevronLeft, ChevronRight, LogOut, Settings, Tag, Ticket, Sun, Moon, X,
+  FileText, ChevronLeft, ChevronRight, LogOut, Settings, Tag, Ticket, Sun, Moon, X, ImageUp, FileSpreadsheet,
 } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { sidebarVariants } from '@/lib/framerVariants';
@@ -20,6 +20,8 @@ const navItems = [
   { href: '/users', label: 'Users', icon: Users },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/invoices', label: 'Invoices', icon: FileText },
+  { href: '/uploads', label: 'Uploads', icon: ImageUp },
+  { href: '/bulk-import', label: 'Bulk Import', icon: FileSpreadsheet },
   { href: '/categories', label: 'Categories', icon: Tag },
   { href: '/coupons', label: 'Coupons', icon: Ticket },
   { href: '/settings', label: 'Settings', icon: Settings },
