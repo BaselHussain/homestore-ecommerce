@@ -10,6 +10,7 @@ import userRoutes from './routes/users';
 import contactRoutes from './routes/contact';
 import adminRouter from './routes/adminRouter';
 import uploadsRouter from './routes/uploadsRouter';
+import { couponsPublicRouter, couponsAdminRouter } from './routes/coupons';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import path from 'path';
 
@@ -63,6 +64,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRouter);
 app.use('/api/admin/uploads', uploadsRouter);
+app.use('/api/admin/coupons', couponsAdminRouter);
+app.use('/api/coupons', couponsPublicRouter);
 
 // 404 handler (must come after all routes)
 app.use(notFoundHandler);

@@ -59,6 +59,12 @@ export const adminApi = {
   // Bulk import
   bulkImportProducts: (products: unknown[]) => api.post('/admin/products/bulk', { products }).then(r => r.data),
 
+  // Coupons
+  getCoupons: () => api.get('/admin/coupons').then(r => r.data),
+  createCoupon: (data: unknown) => api.post('/admin/coupons', data).then(r => r.data),
+  toggleCoupon: (id: string) => api.patch(`/admin/coupons/${id}/toggle`).then(r => r.data),
+  deleteCoupon: (id: string) => api.delete(`/admin/coupons/${id}`).then(r => r.data),
+
   // Image uploads
   getUploads: () => api.get('/admin/uploads').then(r => r.data),
   uploadImages: (formData: FormData) => api.post('/admin/uploads', formData, {

@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [orderSubtotal, setOrderSubtotal] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountAmount: number } | null>(null);
 
   // Redirect if cart is empty and not on confirmation step (wait for cart to load)
   useEffect(() => {
@@ -38,6 +39,14 @@ export default function CheckoutPage() {
   const handleShippingSubmit = (data: ShippingFormValues) => {
     setShippingData(data);
     setStep(3);
+  };
+
+  const handleCouponApplied = (code: string, discountAmount: number) => {
+    setAppliedCoupon({ code, discountAmount });
+  };
+
+  const handleCouponRemoved = () => {
+    setAppliedCoupon(null);
   };
 
   const handlePay = async (method: PaymentMethod) => {
@@ -60,9 +69,13 @@ export default function CheckoutPage() {
 
       let order: Order;
 
+      const couponPayload = appliedCoupon
+        ? { couponCode: appliedCoupon.code, discountAmount: appliedCoupon.discountAmount }
+        : {};
+
       if (user) {
         // Authenticated: backend reads from DB cart
-        order = await ordersApi.create({ shippingAddress });
+        order = await ordersApi.create({ shippingAddress, ...couponPayload });
       } else {
         // Guest: send items + email in body
         const guestItems = items.map((i) => ({
@@ -76,6 +89,7 @@ export default function CheckoutPage() {
           guestEmail: shippingData.email,
           items: guestItems,
           total: subtotal,
+          ...couponPayload,
         });
       }
 
@@ -132,6 +146,9 @@ export default function CheckoutPage() {
                 items={items}
                 subtotal={subtotal}
                 onNext={() => setStep(2)}
+                onCouponApplied={handleCouponApplied}
+                onCouponRemoved={handleCouponRemoved}
+                appliedCoupon={appliedCoupon}
               />
             )}
             {step === 2 && (

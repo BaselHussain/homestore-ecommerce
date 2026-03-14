@@ -74,6 +74,19 @@ export const productsApi = {
 };
 
 
+// Coupons (public validate — uses plain fetch to avoid auth interceptors)
+export const couponsApi = {
+  validate: async (code: string, subtotal: number): Promise<{ valid: true; code: string; discountType: string; discountValue: number; discountAmount: number; finalTotal: number } | { valid: false; error: string; message: string; minOrderValue?: number }> => {
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5000/api';
+    const res = await fetch(`${base}/coupons/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, subtotal }),
+    });
+    return res.json();
+  },
+};
+
 // Orders
 export const ordersApi = {
   create: (data: {
@@ -81,6 +94,8 @@ export const ordersApi = {
     guestEmail?: string;
     items?: Array<{ productId: string; name: string; price: number; quantity: number }>;
     total?: number;
+    couponCode?: string;
+    discountAmount?: number;
   }) => api.post<Order>("/orders", data).then((r) => r.data),
 
   track: (orderId: string, email: string) =>

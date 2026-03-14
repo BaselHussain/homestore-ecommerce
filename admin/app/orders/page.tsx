@@ -32,6 +32,8 @@ interface Order {
   tracking_number: string | null;
   shipping_address: ShippingAddress;
   items: OrderItem[];
+  coupon_code: string | null;
+  discount_amount: number | null;
   created_at: string;
   user: { email: string; name: string } | null;
 }
@@ -234,6 +236,14 @@ export default function OrdersPage() {
                   <div><p className="text-xs text-muted-foreground mb-0.5">Customer</p><p className="text-foreground">{getCustomer(selectedOrder)}</p></div>
                   <div><p className="text-xs text-muted-foreground mb-0.5">Date</p><p className="text-foreground">{new Date(selectedOrder.created_at).toLocaleString()}</p></div>
                   <div><p className="text-xs text-muted-foreground mb-0.5">Total</p><p className="font-bold text-foreground">{fmt(selectedOrder.total_amount)}</p></div>
+                  {selectedOrder.coupon_code && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-0.5">Coupon</p>
+                      <p className="text-green-600 dark:text-green-400 font-mono text-xs font-medium">
+                        {selectedOrder.coupon_code} {selectedOrder.discount_amount ? `(−$${Number(selectedOrder.discount_amount).toFixed(2)})` : ''}
+                      </p>
+                    </div>
+                  )}
                   {selectedOrder.tracking_number && (
                     <div><p className="text-xs text-muted-foreground mb-0.5">Tracking</p><p className="font-mono text-xs">{selectedOrder.tracking_number}</p></div>
                   )}
