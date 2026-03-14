@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { createError } from '../middlewares/errorHandler';
 import { AuthRequest } from '../middlewares/auth';
+import { validateCoupon } from '../routes/coupons';
 
 type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Refunded';
 
@@ -42,6 +43,8 @@ const createOrderSchema = z.object({
   guestEmail: z.string().email().optional(),
   items: z.array(orderItemSchema).optional(),
   total: z.number().positive().optional(),
+  couponCode: z.string().optional(),
+  discountAmount: z.number().min(0).optional(),
 });
 
 const updateOrderStatusSchema = z.object({
@@ -89,7 +92,22 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
       totalAmount = body.total ?? orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     }
 
-    // Create order and (for authenticated users) clear cart in a transaction
+    // Server-side coupon re-validation (prevents race conditions / stale client state)
+    let appliedCouponCode: string | null = null;
+    let appliedDiscountAmount: number = 0;
+
+    if (body.couponCode) {
+      const couponResult = await validateCoupon(body.couponCode, totalAmount);
+      if ('error' in couponResult) {
+        next(createError(couponResult.message, 400));
+        return;
+      }
+      appliedCouponCode = couponResult.coupon.code;
+      appliedDiscountAmount = couponResult.discountAmount;
+      totalAmount = parseFloat((totalAmount - appliedDiscountAmount).toFixed(2));
+    }
+
+    // Create order (and increment coupon usage count) in a single transaction
     const order = await prisma.$transaction(async (tx) => {
       const newOrder = await tx.order.create({
         data: {
@@ -99,6 +117,8 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
           status: 'Confirmed', // simulate immediate payment confirmation
           shipping_address: body.shippingAddress,
           items: orderItems,
+          coupon_code: appliedCouponCode,
+          discount_amount: appliedDiscountAmount > 0 ? appliedDiscountAmount : null,
         },
       });
 
@@ -106,11 +126,19 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
         await tx.cart.deleteMany({ where: { user_id: userId } });
       }
 
+      if (appliedCouponCode) {
+        await tx.coupon.update({
+          where: { code: appliedCouponCode },
+          data: { usage_count: { increment: 1 } },
+        });
+      }
+
       return newOrder;
     });
 
     const who = userId ? `user ${userId}` : `guest ${body.guestEmail}`;
-    console.log(`[ORDERS] createOrder: order ${order.id} created for ${who}, total $${totalAmount.toFixed(2)}`);
+    const couponLog = appliedCouponCode ? ` with coupon ${appliedCouponCode} (−€${appliedDiscountAmount.toFixed(2)})` : '';
+    console.log(`[ORDERS] createOrder: order ${order.id} created for ${who}, total €${totalAmount.toFixed(2)}${couponLog}`);
     res.status(201).json(order);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -174,9 +202,21 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response, next: N
       return;
     }
 
-    const updated = await prisma.order.update({
-      where: { id },
-      data: { status: body.status },
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedOrder = await tx.order.update({
+        where: { id },
+        data: { status: body.status },
+      });
+
+      // Decrement coupon usage count when an order is cancelled or refunded
+      if ((body.status === 'Cancelled' || body.status === 'Refunded') && order.coupon_code) {
+        await tx.coupon.updateMany({
+          where: { code: order.coupon_code, usage_count: { gt: 0 } },
+          data: { usage_count: { decrement: 1 } },
+        });
+      }
+
+      return updatedOrder;
     });
 
     console.log(`[ORDERS] updateOrderStatus: order ${id} transitioned ${currentStatus} → ${body.status}`);

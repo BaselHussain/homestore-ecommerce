@@ -87,11 +87,28 @@ model Order {
   tracking_number  String?  @map("trackingNumber")
   shipping_address Json     @map("shippingAddress")
   items            Json
+  coupon_code      String?  @map("couponCode")
+  discount_amount  Decimal? @db.Decimal(10, 2) @map("discountAmount")
   created_at       DateTime @default(now())
 
   user User? @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@map("orders")
+}
+
+model Coupon {
+  id               String    @id @default(cuid())
+  code             String    @unique
+  discount_type    String    @map("discountType")
+  discount_value   Decimal   @db.Decimal(10, 2) @map("discountValue")
+  min_order_value  Decimal?  @db.Decimal(10, 2) @map("minOrderValue")
+  max_usage_count  Int?      @map("maxUsageCount")
+  usage_count      Int       @default(0) @map("usageCount")
+  is_active        Boolean   @default(true) @map("isActive")
+  expires_at       DateTime? @map("expiresAt")
+  created_at       DateTime  @default(now()) @map("createdAt")
+
+  @@map("coupons")
 }
 
 model Address {
