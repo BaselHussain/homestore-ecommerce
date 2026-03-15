@@ -8,6 +8,7 @@ import {
   generateResetToken,
   validatePasswordStrength,
 } from '../lib/security';
+import { sendPasswordReset } from '../lib/email';
 import { authenticate, AuthRequest } from '../middlewares/auth';
 import { z } from 'zod';
 
@@ -163,8 +164,8 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
     data: { user_id: user.id, token, expires_at: expiresAt },
   });
 
-  // MVP: log token to console (no real email sending)
-  console.log(`[AUTH] Password reset link for ${normalizedEmail}: ${process.env.FRONTEND_URL}/reset-password?token=${token}`);
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  await sendPasswordReset(normalizedEmail, resetUrl);
 
   res.json(successResponse);
 });

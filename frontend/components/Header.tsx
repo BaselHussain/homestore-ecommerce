@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Search, ShoppingBag, Heart, Menu, X, ChevronDown, ChevronRight, Package, User, LogOut } from "lucide-react";
+import SearchAutocomplete from "@/components/SearchAutocomplete";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -532,14 +533,14 @@ const Header = () => {
                 onSubmit={handleSearch}
                 className="container mx-auto max-w-xl flex gap-2 items-center"
               >
-                <input
-                  type="text"
+                <SearchAutocomplete
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={setSearchQuery}
                   onKeyDown={(e) => e.key === "Escape" && closeSearch()}
+                  onSelect={closeSearch}
                   placeholder="Search products..."
                   autoFocus={searchOpen}
-                  className="flex-1 bg-background border border-border rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-200"
+                  className="w-full bg-background border border-border rounded-full px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-200"
                 />
                 <button
                   type="submit"
