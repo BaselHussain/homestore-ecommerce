@@ -1,13 +1,32 @@
 import { Router, Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { createOrder, getUserOrders, getOrderById, updateOrderStatus } from '../controllers/orderController';
 import { authenticate, optionalAuthenticate } from '../middlewares/auth';
 import prisma from '../lib/prisma';
+
+// Create order: 20 per hour per IP
+const createOrderLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  message: { success: false, error: 'Too many orders placed. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Track order: 30 lookups per 15 minutes per IP
+const trackOrderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { success: false, error: 'Too many tracking requests. Please try again shortly.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = Router();
 
 // GET /api/orders/track?orderId=xxx&email=xxx  (public — no auth required)
 // Works for both guest orders (guest_email) and authenticated user orders (user.email)
-router.get('/track', async (req: Request, res: Response) => {
+router.get('/track', trackOrderLimiter, async (req: Request, res: Response) => {
   const { orderId, email } = req.query;
 
   if (!orderId || !email || typeof orderId !== 'string' || typeof email !== 'string') {
@@ -62,7 +81,7 @@ router.get('/', authenticate, getUserOrders);
 router.get('/:id', authenticate, getOrderById);
 
 // POST /api/orders - create order (supports both authenticated + guest checkout)
-router.post('/', optionalAuthenticate, createOrder);
+router.post('/', createOrderLimiter, optionalAuthenticate, createOrder);
 
 // PATCH /api/orders/:id/status - update order status (auth required)
 router.patch('/:id/status', authenticate, updateOrderStatus);

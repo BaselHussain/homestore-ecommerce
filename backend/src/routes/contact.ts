@@ -1,12 +1,22 @@
 import { Router, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { AuthRequest } from '../middlewares/auth';
 import prisma from '../lib/prisma';
 
 const router = Router();
 
+// Contact form: 5 submissions per hour per IP
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { success: false, error: 'Too many messages sent. Please try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // POST /api/contact
-router.post('/', async (req: AuthRequest, res: Response) => {
+router.post('/', contactLimiter, async (req: AuthRequest, res: Response) => {
   const ContactFormSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be at most 100 characters'),
     email: z.string().email('Please provide a valid email address'),

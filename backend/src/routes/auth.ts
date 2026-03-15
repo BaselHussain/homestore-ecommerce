@@ -14,11 +14,38 @@ import { z } from 'zod';
 
 const router = Router();
 
-// Rate limiter: 5 attempts per 15 minutes per IP
+// Login: 5 attempts per 15 minutes per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   message: { success: false, error: 'Too many attempts, please try again in 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Signup: 10 accounts per hour per IP
+const signupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { success: false, error: 'Too many accounts created. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Forgot password: 3 requests per hour per IP (prevents email spam)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  message: { success: false, error: 'Too many password reset requests. Please try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Reset password: 5 attempts per 15 minutes per IP (prevents token guessing)
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, error: 'Too many attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -36,7 +63,7 @@ const LoginSchema = z.object({
 });
 
 // POST /api/auth/signup
-router.post('/signup', async (req: Request, res: Response) => {
+router.post('/signup', signupLimiter, async (req: Request, res: Response) => {
   const parsed = SignupSchema.safeParse(req.body);
   if (!parsed.success) {
     const firstError = parsed.error.errors[0];
@@ -133,7 +160,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/auth/forgot-password
-router.post('/forgot-password', async (req: Request, res: Response) => {
+router.post('/forgot-password', forgotPasswordLimiter, async (req: Request, res: Response) => {
   const { email } = req.body;
   if (!email || typeof email !== 'string') {
     res.status(400).json({ success: false, error: 'Email is required' });
@@ -171,7 +198,7 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/reset-password
-router.post('/reset-password', async (req: Request, res: Response) => {
+router.post('/reset-password', resetPasswordLimiter, async (req: Request, res: Response) => {
   const { token, newPassword } = req.body;
 
   if (!token || !newPassword) {

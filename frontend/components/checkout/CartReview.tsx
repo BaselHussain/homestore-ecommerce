@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Tag, X, Loader2 } from 'lucide-react';
+import { Tag, X, Loader2, AlertTriangle } from 'lucide-react';
 import type { CartItem } from '@/contexts/CartContext';
 import LightSheenButton from '@/components/ui/light-sheen-button';
 import { couponsApi } from '@/lib/api';
@@ -21,6 +21,11 @@ const CartReview = ({ items, subtotal, onNext, onCouponApplied, onCouponRemoved,
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [isValidating, setIsValidating] = useState(false);
+
+  const stockIssues = items.filter(
+    ({ product, quantity }) => product.stock !== undefined && product.stock < quantity
+  );
+  const hasStockIssues = stockIssues.length > 0;
 
   const shipping = subtotal >= 50 ? 0 : 5;
   const discount = appliedCoupon?.discountAmount ?? 0;
@@ -54,6 +59,21 @@ const CartReview = ({ items, subtotal, onNext, onCouponApplied, onCouponRemoved,
   return (
     <div>
       <h2 className="font-display text-2xl font-bold text-foreground mb-6">Review Your Order</h2>
+
+      {hasStockIssues && (
+        <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 text-destructive rounded-xl px-4 py-3 mb-4 text-sm">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Stock issue</p>
+            {stockIssues.map(({ product, quantity }) => (
+              <p key={product.id} className="text-xs mt-0.5">
+                {product.name}: only {product.stock} available, {quantity} in cart.{' '}
+                <Link href="/cart" className="underline">Update cart</Link>
+              </p>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3 mb-6">
         {items.map(({ product, quantity }) => (
@@ -154,7 +174,8 @@ const CartReview = ({ items, subtotal, onNext, onCouponApplied, onCouponRemoved,
         <LightSheenButton
           onClick={onNext}
           variant="primary"
-          className="flex-1 py-3.5 rounded-full font-semibold text-sm cursor-pointer"
+          disabled={hasStockIssues}
+          className="flex-1 py-3.5 rounded-full font-semibold text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Continue to Shipping
         </LightSheenButton>
