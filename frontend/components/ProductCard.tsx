@@ -21,7 +21,8 @@ const badgeLabels = {
 };
 
 const ProductCard = ({ product, wishlistMode = false }: { product: Product; wishlistMode?: boolean }) => {
-  const isOutOfStock = product.badge === "out-of-stock";
+  const isOutOfStock = product.badge === "out-of-stock" || product.stock === 0;
+  const isLowStock = !isOutOfStock && product.stock !== undefined && product.stock > 0 && product.stock <= 5;
   const { addToCart } = useCart();
   const { toast } = useToast();
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist: checkWishlist } = useWishlist();
@@ -112,6 +113,9 @@ const ProductCard = ({ product, wishlistMode = false }: { product: Product; wish
             <span className="text-xs text-muted-foreground line-through">€{product.originalPrice.toFixed(2)}</span>
           )}
         </div>
+        {isLowStock && (
+          <p className="text-xs text-amber-600 font-medium mt-0.5">Only {product.stock} left</p>
+        )}
         <div className="flex items-center justify-between mt-1.5">
           <div className="flex items-center gap-1">
             <Star className="w-3 h-3 fill-primary text-primary" />

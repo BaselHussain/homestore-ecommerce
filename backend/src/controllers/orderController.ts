@@ -4,6 +4,7 @@ import prisma from '../lib/prisma';
 import { createError } from '../middlewares/errorHandler';
 import { AuthRequest } from '../middlewares/auth';
 import { validateCoupon } from '../routes/coupons';
+import { sendOrderConfirmation, sendShippingUpdate } from '../lib/email';
 
 type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Refunded';
 
@@ -92,6 +93,25 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
       totalAmount = body.total ?? orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     }
 
+    // Stock validation — check availability before placing order
+    const productIds = orderItems.filter((i) => i.productId).map((i) => i.productId);
+    if (productIds.length > 0) {
+      const stockedProducts = await prisma.product.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true, name: true, stock: true },
+      });
+      const insufficient: string[] = [];
+      for (const item of orderItems) {
+        if (!item.productId) continue;
+        const p = stockedProducts.find((sp) => sp.id === item.productId);
+        if (p && p.stock < item.quantity) insufficient.push(p.name);
+      }
+      if (insufficient.length > 0) {
+        next(createError(`Insufficient stock for: ${insufficient.join(', ')}`, 400));
+        return;
+      }
+    }
+
     // Server-side coupon re-validation (prevents race conditions / stale client state)
     let appliedCouponCode: string | null = null;
     let appliedDiscountAmount: number = 0;
@@ -133,12 +153,39 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
         });
       }
 
+      // Decrement stock for each item with a productId
+      for (const item of orderItems) {
+        if (item.productId) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
+      }
+
       return newOrder;
     });
 
     const who = userId ? `user ${userId}` : `guest ${body.guestEmail}`;
     const couponLog = appliedCouponCode ? ` with coupon ${appliedCouponCode} (−€${appliedDiscountAmount.toFixed(2)})` : '';
     console.log(`[ORDERS] createOrder: order ${order.id} created for ${who}, total €${totalAmount.toFixed(2)}${couponLog}`);
+
+    // Fire-and-forget confirmation email
+    const emailTo = userId
+      ? await prisma.user.findUnique({ where: { id: userId }, select: { email: true } }).then((u) => u?.email ?? null)
+      : body.guestEmail ?? null;
+    if (emailTo) {
+      void sendOrderConfirmation(emailTo, {
+        id: order.id,
+        total_amount: Number(order.total_amount),
+        status: order.status,
+        shipping_address: order.shipping_address as { street: string; city: string; state: string; zip: string; country: string },
+        items: orderItems,
+        coupon_code: order.coupon_code,
+        discount_amount: order.discount_amount ? Number(order.discount_amount) : null,
+      });
+    }
+
     res.status(201).json(order);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -216,10 +263,40 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response, next: N
         });
       }
 
+      // Restore stock when cancelled or refunded
+      if (body.status === 'Cancelled' || body.status === 'Refunded') {
+        const items = order.items as Array<{ productId?: string; quantity: number }>;
+        for (const item of items) {
+          if (item.productId) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+      }
+
       return updatedOrder;
     });
 
     console.log(`[ORDERS] updateOrderStatus: order ${id} transitioned ${currentStatus} → ${body.status}`);
+
+    // Fire-and-forget shipping/delivery email
+    if (body.status === 'Shipped' || body.status === 'Delivered') {
+      const emailTo = updated.user_id
+        ? await prisma.user.findUnique({ where: { id: updated.user_id }, select: { email: true } }).then((u) => u?.email ?? null)
+        : updated.guest_email ?? null;
+      if (emailTo) {
+        void sendShippingUpdate(emailTo, {
+          id: updated.id,
+          total_amount: Number(updated.total_amount),
+          status: updated.status,
+          shipping_address: updated.shipping_address as { street: string; city: string; state: string; zip: string; country: string },
+          items: updated.items as Array<{ name: string; price: number; quantity: number }>,
+        });
+      }
+    }
+
     res.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
