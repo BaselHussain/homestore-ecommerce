@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { adminOnly } from '../middlewares/adminOnly';
+import { sendShippingUpdate } from '../lib/email';
 
 const router = Router();
 
@@ -22,6 +24,20 @@ import prisma from '../lib/prisma';
 function normalizeImageUrl(url: string): string {
   return url; // keep full URLs (Cloudinary https://... must not be stripped)
 }
+
+const MAX_PAGE_LIMIT = 100;
+
+const productSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(200),
+  description: z.string().max(2000).optional().default(''),
+  price: z.number().positive('Price must be positive'),
+  originalPrice: z.number().positive().optional().nullable(),
+  stock: z.number().int().min(0, 'Stock cannot be negative').default(0),
+  category: z.string().min(1, 'Category is required').max(100),
+  badge: z.enum(['new', 'sale', 'out-of-stock']).optional().nullable(),
+  images: z.array(z.string().url()).optional().default([]),
+  itemCode: z.string().max(100).optional().nullable(),
+});
 
 // GET /api/admin/stats
 router.get('/stats', async (_req: Request, res: Response) => {
@@ -86,7 +102,7 @@ router.get('/stats', async (_req: Request, res: Response) => {
 // GET /api/admin/products
 router.get('/products', async (req: Request, res: Response) => {
   const page = parseInt(String(req.query.page ?? '1'));
-  const limit = parseInt(String(req.query.limit ?? '20'));
+  const limit = Math.min(parseInt(String(req.query.limit ?? '20')), MAX_PAGE_LIMIT);
   const skip = (page - 1) * limit;
   const search = req.query.search as string | undefined;
   const category = req.query.category as string | undefined;
@@ -105,9 +121,14 @@ router.get('/products', async (req: Request, res: Response) => {
 
 // POST /api/admin/products
 router.post('/products', async (req: Request, res: Response) => {
-  const { name, description, price, originalPrice, stock, category, badge, images, itemCode } = req.body;
+  const parsed = productSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.errors.map(e => e.message).join(', ') });
+    return;
+  }
+  const { name, description, price, originalPrice, stock, category, badge, images, itemCode } = parsed.data;
   const product = await prisma.product.create({
-    data: { name, description, price, originalPrice, stock, category, badge, images: (images ?? []).map(normalizeImageUrl), itemCode },
+    data: { name, description, price, originalPrice, stock, category, badge, images: images.map(normalizeImageUrl), itemCode },
   });
   res.status(201).json({ success: true, product });
 });
@@ -115,10 +136,15 @@ router.post('/products', async (req: Request, res: Response) => {
 // PUT /api/admin/products/:id
 router.put('/products/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, description, price, originalPrice, stock, category, badge, images, itemCode } = req.body;
+  const parsed = productSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ success: false, error: parsed.error.errors.map(e => e.message).join(', ') });
+    return;
+  }
+  const { name, description, price, originalPrice, stock, category, badge, images, itemCode } = parsed.data;
   const product = await prisma.product.update({
     where: { id },
-    data: { name, description, price, originalPrice, stock, category, badge, images: (images ?? []).map(normalizeImageUrl), itemCode },
+    data: { name, description, price, originalPrice, stock, category, badge, images: images.map(normalizeImageUrl), itemCode },
   });
   res.json({ success: true, product });
 });
@@ -155,7 +181,7 @@ router.delete('/products/:id', async (req: Request, res: Response) => {
 // GET /api/admin/orders
 router.get('/orders', async (req: Request, res: Response) => {
   const page = parseInt(String(req.query.page ?? '1'));
-  const limit = parseInt(String(req.query.limit ?? '20'));
+  const limit = Math.min(parseInt(String(req.query.limit ?? '20')), MAX_PAGE_LIMIT);
   const skip = (page - 1) * limit;
   const status = req.query.status as string | undefined;
 
@@ -173,19 +199,38 @@ router.get('/orders', async (req: Request, res: Response) => {
 router.patch('/orders/:id/status', async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
-  const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+  const validStatuses = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Refunded'];
   if (!validStatuses.includes(status)) {
     res.status(400).json({ success: false, error: 'Invalid status' });
     return;
   }
-  const order = await prisma.order.update({ where: { id }, data: { status } });
+  const order = await prisma.order.update({
+    where: { id },
+    data: { status },
+    include: { user: { select: { email: true } } },
+  });
+
+  // Fire-and-forget shipping/delivery email
+  if (status === 'Shipped' || status === 'Delivered') {
+    const emailTo = (order.user as { email: string } | null)?.email ?? order.guest_email ?? null;
+    if (emailTo) {
+      void sendShippingUpdate(emailTo, {
+        id: order.id,
+        total_amount: Number(order.total_amount),
+        status: order.status,
+        shipping_address: order.shipping_address as { street: string; city: string; state: string; zip: string; country: string },
+        items: order.items as Array<{ name: string; price: number; quantity: number }>,
+      });
+    }
+  }
+
   res.json({ success: true, order });
 });
 
 // GET /api/admin/users
 router.get('/users', async (req: Request, res: Response) => {
   const page = parseInt(String(req.query.page ?? '1'));
-  const limit = parseInt(String(req.query.limit ?? '20'));
+  const limit = Math.min(parseInt(String(req.query.limit ?? '20')), MAX_PAGE_LIMIT);
   const skip = (page - 1) * limit;
   const search = req.query.search as string | undefined;
 
@@ -292,7 +337,7 @@ router.get('/analytics', async (req: Request, res: Response) => {
 // GET /api/admin/invoices
 router.get('/invoices', async (req: Request, res: Response) => {
   const page = parseInt(String(req.query.page ?? '1'));
-  const limit = parseInt(String(req.query.limit ?? '20'));
+  const limit = Math.min(parseInt(String(req.query.limit ?? '20')), MAX_PAGE_LIMIT);
   const skip = (page - 1) * limit;
   const startDate = req.query.startDate as string | undefined;
   const endDate = req.query.endDate as string | undefined;

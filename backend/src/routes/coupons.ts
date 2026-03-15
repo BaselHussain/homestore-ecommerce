@@ -1,8 +1,18 @@
 import { Router, Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { Coupon } from '@prisma/client';
 import prisma from '../lib/prisma';
 import { adminOnly } from '../middlewares/adminOnly';
+
+// Coupon validate: 20 attempts per 15 minutes per IP (prevent brute-force)
+const validateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { valid: false, error: 'TOO_MANY_ATTEMPTS', message: 'Too many attempts. Please try again shortly.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Public routes (mounted at /api/coupons)
 const publicRouter = Router();
@@ -47,7 +57,7 @@ async function validateCoupon(
 }
 
 // POST /api/coupons/validate  (public — no auth required)
-publicRouter.post('/validate', async (req: Request, res: Response) => {
+publicRouter.post('/validate', validateLimiter, async (req: Request, res: Response) => {
   const { code, subtotal } = req.body;
 
   if (!code || typeof code !== 'string') {

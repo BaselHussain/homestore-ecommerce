@@ -4,7 +4,7 @@ import prisma from '../lib/prisma';
 import { createError } from '../middlewares/errorHandler';
 import { AuthRequest } from '../middlewares/auth';
 import { validateCoupon } from '../routes/coupons';
-import { sendOrderConfirmation, sendShippingUpdate } from '../lib/email';
+import { sendOrderConfirmation } from '../lib/email';
 
 type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled' | 'Refunded';
 
@@ -89,8 +89,31 @@ export const createOrder = async (req: AuthRequest, res: Response, next: NextFun
         next(createError('Order items are required for guest checkout', 400));
         return;
       }
-      orderItems = body.items;
-      totalAmount = body.total ?? orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      // Re-fetch actual prices from DB — never trust client-provided prices
+      const guestProductIds = body.items.map((i) => i.productId);
+      const dbProducts = await prisma.product.findMany({
+        where: { id: { in: guestProductIds } },
+        select: { id: true, name: true, price: true },
+      });
+      const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+
+      const missingProducts = guestProductIds.filter((id) => !productMap.has(id));
+      if (missingProducts.length > 0) {
+        next(createError('One or more products not found', 400));
+        return;
+      }
+
+      orderItems = body.items.map((item) => {
+        const dbProduct = productMap.get(item.productId)!;
+        return {
+          productId: item.productId,
+          name: dbProduct.name,
+          price: Number(dbProduct.price), // DB price, not client price
+          quantity: item.quantity,
+        };
+      });
+      totalAmount = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     }
 
     // Stock validation — check availability before placing order
@@ -242,6 +265,12 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response, next: N
       return;
     }
 
+    // Users may only cancel their own orders — all other transitions are admin-only
+    if (body.status !== 'Cancelled') {
+      next(createError('Users may only cancel orders. Use the admin panel for other status changes.', 403));
+      return;
+    }
+
     const currentStatus = order.status as OrderStatus;
     const validNext = VALID_TRANSITIONS[currentStatus];
     if (!validNext.includes(body.status)) {
@@ -280,23 +309,6 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response, next: N
     });
 
     console.log(`[ORDERS] updateOrderStatus: order ${id} transitioned ${currentStatus} → ${body.status}`);
-
-    // Fire-and-forget shipping/delivery email
-    if (body.status === 'Shipped' || body.status === 'Delivered') {
-      const emailTo = updated.user_id
-        ? await prisma.user.findUnique({ where: { id: updated.user_id }, select: { email: true } }).then((u) => u?.email ?? null)
-        : updated.guest_email ?? null;
-      if (emailTo) {
-        void sendShippingUpdate(emailTo, {
-          id: updated.id,
-          total_amount: Number(updated.total_amount),
-          status: updated.status,
-          shipping_address: updated.shipping_address as { street: string; city: string; state: string; zip: string; country: string },
-          items: updated.items as Array<{ name: string; price: number; quantity: number }>,
-        });
-      }
-    }
-
     res.json(updated);
   } catch (error) {
     if (error instanceof z.ZodError) {
